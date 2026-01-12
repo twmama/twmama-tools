@@ -119,6 +119,14 @@
         .menu-item .icon { font-size: 1.5rem; margin-bottom: 5px; }
         .menu-item .label { font-size: 0.8rem; font-weight: bold; color: #576574; }
 
+        /* Mission Box */
+        .mission-box {
+            background: #fff3e0; border: 2px dashed #ffe0b2;
+            width: 100%; padding: 12px; border-radius: 15px;
+            margin-bottom: 15px; text-align: center; box-sizing: border-box;
+        }
+        .mission-box h3 { margin: 0; font-size: 0.9rem; color: var(--text); }
+
         .gallery-grid {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%;
         }
@@ -203,7 +211,7 @@
             <div class="evo-bar-container">
                 <div class="evo-bar-fill" id="evo-bar-fill"></div>
             </div>
-            <div style="font-size:0.75rem; color:#888;">次の進化まで あと <span id="words-to-evo">--</span> 單語</div>
+            <div style="font-size:0.75rem; color:#888;">次の進化まで あと <span id="words-to-evo">--</span> 単語</div>
         </div>
 
         <div class="menu-grid">
@@ -254,13 +262,47 @@
 
     <!-- 4. Gallery Screen -->
     <div id="screen-gallery" class="screen">
-        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2>🦖 進化図鑑</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><h2>🦖 進化図鑑</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
+        
+        <!-- 今日任務面板 -->
+        <div class="mission-box" id="gallery-mission">
+            <h3>📅 今日のミッション (約10分)</h3>
+            <div style="display:flex; justify-content:space-around; margin-top:10px; align-items:center;">
+                <div style="text-align:center;">
+                    <div style="font-size:1.5rem; color:#4caf50;" class="mission-new-count">0</div>
+                    <div style="font-size:0.8rem; color:#666;">新規 (New)</div>
+                </div>
+                <div style="font-size:1.2rem; color:#ccc;">+</div>
+                <div style="text-align:center;">
+                    <div style="font-size:1.5rem; color:#ff9800;" class="mission-review-count">0</div>
+                    <div style="font-size:0.8rem; color:#666;">復習 (Review)</div>
+                </div>
+            </div>
+        </div>
+
         <div class="gallery-grid" id="gallery-container"></div>
     </div>
 
     <!-- 5. Wordbook Screen -->
     <div id="screen-wordbook" class="screen">
-        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2>📚 単語帳</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><h2>📚 単語帳</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
+        
+        <!-- 今日任務面板 -->
+        <div class="mission-box" id="wordbook-mission">
+            <h3>📅 今日のミッション (約10分)</h3>
+            <div style="display:flex; justify-content:space-around; margin-top:10px; align-items:center;">
+                <div style="text-align:center;">
+                    <div style="font-size:1.5rem; color:#4caf50;" class="mission-new-count">0</div>
+                    <div style="font-size:0.8rem; color:#666;">新規 (New)</div>
+                </div>
+                <div style="font-size:1.2rem; color:#ccc;">+</div>
+                <div style="text-align:center;">
+                    <div style="font-size:1.5rem; color:#ff9800;" class="mission-review-count">0</div>
+                    <div style="font-size:0.8rem; color:#666;">復習 (Review)</div>
+                </div>
+            </div>
+        </div>
+
         <div style="width:100%; overflow-y: auto; flex:1;"><div class="word-list" id="wordbook-container"></div></div>
     </div>
 
@@ -303,7 +345,7 @@ const WORD_LEVELS = { 1: "必須単語", 2: "頻出単語", 3: "上級単語" };
 
 const PET_DATA = [
     { t: 0, e: "🥚", n: "卵", s: ["ゆらゆら...", "しーっ、寝てるよ", "トントンして！"] },
-    { t: 10, e: "🐣", n: "ヒヨコ", s: ["ピヨピヨ！", "おなかすいたな", "お散歩いこう！"] },
+    { t: 10, e: "🐣", n: "ヒヨコ", s: ["ピヨピヨ！", "おなかすいたな", "お散步いこう！"] },
     { t: 30, e: "🐥", n: "小鳥", s: ["羽が強くなったよ！", "空を飛びたいな", "ピピピピ！"] },
     { t: 60, e: "🐦", n: "青い鳥", s: ["幸せを運ぶよ", "歌を歌おう♪", "風が気持ちいい！"] },
     { t: 100, e: "🦜", n: "オウム", s: ["ハロー！", "英語大好き！", "もっと教えて！"] },
@@ -321,63 +363,8 @@ const PET_DATA = [
 
 const COMMON_SPEECHES = ["大好きだよ！", "よくできました！", "一緒に頑張ろう！", "英語って楽しいね！", "天才じゃない！？", "キラキラしてるね！"];
 
-// 還原完整 160 單字
-const CORE_WORDS = [
-    {w:"famous",m:"有名な",l:1}, {w:"weekend",m:"週末",l:1}, {w:"plan",m:"計画",l:1},
-    {w:"enjoy",m:"楽しむ",l:1}, {w:"library",m:"図書館",l:1}, {w:"visit",m:"訪れる",l:1},
-    {w:"because",m:"なぜなら",l:1}, {w:"weather",m:"天気",l:1}, {w:"friend",m:"友達",l:1},
-    {w:"school",m:"学校",l:1}, {w:"student",m:"生徒",l:1}, {w:"family",m:"家族",l:1},
-    {w:"house",m:"家",l:1}, {w:"room",m:"部屋",l:1}, {w:"study",m:"勉強する",l:1},
-    {w:"play",m:"遊ぶ/弾く",l:1}, {w:"watch",m:"見る",l:1}, {w:"cook",m:"料理する",l:1},
-    {w:"make",m:"作る",l:1}, {w:"buy",m:"買う",l:1}, {w:"want",m:"欲しい",l:1},
-    {w:"like",m:"好き",l:1}, {w:"have",m:"持っている",l:1}, {w:"go",m:"行く",l:1},
-    {w:"come",m:"来る",l:1}, {w:"see",m:"會う/見る",l:1}, {w:"eat",m:"食べる",l:1},
-    {w:"give",m:"与える",l:1}, {w:"take",m:"取る/連れて行く",l:1}, {w:"help",m:"助ける",l:1},
-    {w:"know",m:"知っている",l:1}, {w:"think",m:"思う",l:1}, {w:"say",m:"言う",l:1},
-    {w:"look",m:"見る",l:1}, {w:"use",m:"使う",l:1}, {w:"find",m:"見つける",l:1},
-    {w:"need",m:"必要とする",l:1}, {w:"work",m:"働く",l:1}, {w:"try",m:"試す",l:1},
-    {w:"ask",m:"尋ねる",l:1}, {w:"talk",m:"話す",l:1}, {w:"start",m:"始める",l:1},
-    {w:"finish",m:"終える",l:1}, {w:"live",m:"住む",l:1}, {w:"stay",m:"滯在する",l:1},
-    {w:"move",m:"動く/引っ越す",l:1}, {w:"walk",m:"歩く",l:1}, {w:"run",m:"走る",l:1},
-    {w:"read",m:"読む",l:1}, {w:"write",m:"書く",l:1}, {w:"speak",m:"話す",l:1},
-    {w:"listen",m:"聞く",l:1}, {w:"open",m:"開ける",l:1}, {w:"close",m:"閉める",l:1},
-    {w:"happy",m:"幸せな",l:1}, {w:"sad",m:"悲しい",l:1}, {w:"angry",m:"怒った",l:1},
-    {w:"tired",m:"疲れた",l:1}, {w:"hungry",m:"空腹の",l:1}, {w:"thirsty",m:"喉が渇いた",l:1},
-    {w:"good",m:"良い",l:1}, {w:"bad",m:"悪い",l:1}, {w:"big",m:"大きい",l:1},
-    {w:"small",m:"小さい",l:1}, {w:"long",m:"長い",l:1}, {w:"short",m:"短い",l:1},
-    {w:"new",m:"新しい",l:1}, {w:"old",m:"古い",l:1}, {w:"hot",m:"暑い",l:1},
-    {w:"cold",m:"寒い",l:1}, {w:"warm",m:"暖かい",l:1}, {w:"cool",m:"涼しい",l:1},
-    {w:"fast",m:"速い",l:1}, {w:"slow",m:"遅い",l:1}, {w:"easy",m:"簡単な",l:1},
-    {w:"difficult",m:"難しい",l:1}, {w:"interesting",m:"面白い",l:1}, {w:"boring",m:"退屈な",l:1},
-    {w:"fun",m:"楽しい",l:1}, {w:"busy",m:"忙しい",l:1}, {w:"free",m:"暇な/自由な",l:1},
-    {w:"favorite",m:"一番好きな",l:1}, {w:"popular",m:"人気のある",l:1}, {w:"important",m:"重要な",l:1},
-    {w:"beautiful",m:"美しい",l:1}, {w:"famous",m:"有名な",l:1}, {w:"kind",m:"親切な",l:1},
-    {w:"time",m:"時間",l:1}, {w:"day",m:"日",l:1}, {w:"week",m:"週",l:1},
-    {w:"month",m:"月",l:1}, {w:"year",m:"年",l:1}, {w:"morning",m:"朝",l:1},
-    {w:"afternoon",m:"午後",l:1}, {w:"evening",m:"夕方",l:1}, {w:"night",m:"夜",l:1},
-    {w:"today",m:"今日",l:1}, {w:"tomorrow",m:"明日",l:1}, {w:"yesterday",m:"昨日",l:1},
-    {w:"summer",m:"夏",l:1}, {w:"winter",m:"冬",l:1}, {w:"spring",m:"春",l:1},
-    {w:"fall",m:"秋",l:1}, {w:"vacation",m:"休暇",l:1}, {w:"holiday",m:"休日",l:1},
-    {w:"breakfast",m:"朝食",l:1}, {w:"lunch",m:"晝食",l:1}, {w:"dinner",m:"夕食",l:1},
-    {w:"food",m:"食べ物",l:1}, {w:"water",m:"水",l:1}, {w:"book",m:"本",l:1},
-    {w:"pen",m:"ペン",l:1}, {w:"computer",m:"コンピュータ",l:1}, {w:"phone",m:"電話",l:1},
-    {w:"money",m:"お金",l:1}, {w:"bag",m:"鞄",l:1}, {w:"clothes",m:"服",l:1},
-    {w:"car",m:"車",l:1}, {w:"bus",m:"バス",l:1}, {w:"train",m:"電車",l:1},
-    {w:"bike",m:"自転車",l:1}, {w:"city",m:"都市",l:1}, {w:"park",m:"公園",l:1},
-    {w:"hospital",m:"病院",l:1}, {w:"station",m:"駅",l:1}, {w:"restaurant",m:"レストラン",l:1},
-    {w:"museum",m:"博物館",l:1}, {w:"idea",m:"考え",l:1}, {w:"problem",m:"問題",l:1},
-    {w:"question",m:"質問",l:1}, {w:"answer",m:"答え",l:1}, {w:"story",m:"物語",l:1},
-    {w:"letter",m:"手紙",l:1}, {w:"picture",m:"寫真",l:1}, {w:"music",m:"音樂",l:1},
-    {w:"movie",m:"映画",l:1}, {w:"sport",m:"スポーツ",l:1}, {w:"game",m:"ゲーム",l:1},
-    {w:"art",m:"芸術",l:1}, {w:"history",m:"歴史",l:1}, {w:"science",m:"科學",l:1},
-    {w:"math",m:"數學",l:1}, {w:"English",m:"英語",l:1}, {w:"Japanese",m:"日本語",l:1},
-    {w:"animal",m:"動物",l:1}, {w:"dog",m:"犬",l:1}, {w:"cat",m:"貓",l:1},
-    {w:"bird",m:"鳥",l:1}, {w:"fish",m:"魚",l:1}, {w:"flower",m:"花",l:1},
-    {w:"tree",m:"木",l:1}, {w:"river",m:"川",l:1}, {w:"sea",m:"海",l:1},
-    {w:"mountain",m:"山",l:1}, {w:"sky",m:"空",l:1}, {w:"sun",m:"太陽",l:1},
-    {w:"moon",m:"月",l:1}, {w:"star",m:"星",l:1}, {w:"rain",m:"雨",l:1},
-    {w:"snow",m:"雪",l:1}, {w:"wind",m:"風",l:1}, {w:"cloud",m:"雲",l:1}
-];
+// 完整單字庫保持不變
+const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},{w:"plan",m:"計画",l:1},{w:"enjoy",m:"楽しむ",l:1},{w:"library",m:"図書館",l:1},{w:"visit",m:"訪れる",l:1},{w:"because",m:"なぜなら",l:1},{w:"weather",m:"天気",l:1},{w:"friend",m:"友達",l:1},{w:"school",m:"学校",l:1},{w:"student",m:"生徒",l:1},{w:"family",m:"家族",l:1},{w:"house",m:"家",l:1},{w:"room",m:"部屋",l:1},{w:"study",m:"勉強する",l:1},{w:"play",m:"遊ぶ/弾く",l:1},{w:"watch",m:"見る",l:1},{w:"cook",m:"料理する",l:1},{w:"make",m:"作る",l:1},{w:"buy",m:"買う",l:1},{w:"want",m:"欲しい",l:1},{w:"like",m:"好き",l:1},{w:"have",m:"持っている",l:1},{w:"go",m:"行く",l:1},{w:"come",m:"来る",l:1},{w:"see",m:"會う/見る",l:1},{w:"eat",m:"食べる",l:1},{w:"give",m:"与える",l:1},{w:"take",m:"取る/連れて行く",l:1},{w:"help",m:"助ける",l:1},{w:"know",m:"知っている",l:1},{w:"think",m:"思う",l:1},{w:"say",m:"言う",l:1},{w:"look",m:"見る",l:1},{w:"use",m:"使う",l:1},{w:"find",m:"見つける",l:1},{w:"need",m:"必要とする",l:1},{w:"work",m:"働く",l:1},{w:"try",m:"試す",l:1},{w:"ask",m:"尋ねる",l:1},{w:"talk",m:"話す",l:1},{w:"start",m:"始める",l:1},{w:"finish",m:"終える",l:1},{w:"live",m:"住む",l:1},{w:"stay",m:"滯在する",l:1},{w:"move",m:"動く/引っ越す",l:1},{w:"walk",m:"歩く",l:1},{w:"run",m:"走る",l:1},{w:"read",m:"読む",l:1},{w:"write",m:"書く",l:1},{w:"speak",m:"話す",l:1},{w:"listen",m:"聞く",l:1},{w:"open",m:"開ける",l:1},{w:"close",m:"閉める",l:1},{w:"happy",m:"幸せな",l:1},{w:"sad",m:"悲しい",l:1},{w:"angry",m:"怒った",l:1},{w:"tired",m:"疲れた",l:1},{w:"hungry",m:"空腹の",l:1},{w:"thirsty",m:"喉が渇いた",l:1},{w:"good",m:"良い",l:1},{w:"bad",m:"悪い",l:1},{w:"big",m:"大きい",l:1},{w:"small",m:"小さい",l:1},{w:"long",m:"長い",l:1},{w:"short",m:"短い",l:1},{w:"new",m:"新しい",l:1},{w:"old",m:"古い",l:1},{w:"hot",m:"暑い",l:1},{w:"cold",m:"寒い",l:1},{w:"warm",m:"暖かい",l:1},{w:"cool",m:"涼しい",l:1},{w:"fast",m:"速い",l:1},{w:"slow",m:"遅い",l:1},{w:"easy",m:"簡単な",l:1},{w:"difficult",m:"難しい",l:1},{w:"interesting",m:"面白い",l:1},{w:"boring",m:"退屈な",l:1},{w:"fun",m:"楽しい",l:1},{w:"busy",m:"忙しい",l:1},{w:"free",m:"暇な/自由な",l:1},{w:"favorite",m:"一番好きな",l:1},{w:"popular",m:"人気のある",l:1},{w:"important",m:"重要な",l:1},{w:"beautiful",m:"美しい",l:1},{w:"famous",m:"有名な",l:1},{w:"kind",m:"親切な",l:1},{w:"time",m:"時間",l:1},{w:"day",m:"日",l:1},{w:"week",m:"週",l:1},{w:"month",m:"月",l:1},{w:"year",m:"年",l:1},{w:"morning",m:"朝",l:1},{w:"afternoon",m:"午後",l:1},{w:"evening",m:"夕方",l:1},{w:"night",m:"夜",l:1},{w:"today",m:"今日",l:1},{w:"tomorrow",m:"明日",l:1},{w:"yesterday",m:"昨日",l:1},{w:"summer",m:"夏",l:1},{w:"winter",m:"冬",l:1},{w:"spring",m:"春",l:1},{w:"fall",m:"秋",l:1},{w:"vacation",m:"休暇",l:1},{w:"holiday",m:"休日",l:1},{w:"breakfast",m:"朝食",l:1},{w:"lunch",m:"晝食",l:1},{w:"dinner",m:"夕食",l:1},{w:"food",m:"食べ物",l:1},{w:"water",m:"水",l:1},{w:"book",m:"本",l:1},{w:"pen",m:"ペン",l:1},{w:"computer",m:"コンピュータ",l:1},{w:"phone",m:"電話",l:1},{w:"money",m:"お金",l:1},{w:"bag",m:"鞄",l:1},{w:"clothes",m:"服",l:1},{w:"car",m:"車",l:1},{w:"bus",m:"バス",l:1},{w:"train",m:"電車",l:1},{w:"bike",m:"自転車",l:1},{w:"city",m:"都市",l:1},{w:"park",m:"公園",l:1},{w:"hospital",m:"病院",l:1},{w:"station",m:"駅",l:1},{w:"restaurant",m:"レストラン",l:1},{w:"museum",m:"博物館",l:1},{w:"idea",m:"考え",l:1},{w:"problem",m:"問題",l:1},{w:"question",m:"質問",l:1},{w:"answer",m:"答え",l:1},{w:"story",m:"物語",l:1},{w:"letter",m:"手紙",l:1},{w:"picture",m:"寫真",l:1},{w:"music",m:"音樂",l:1},{w:"movie",m:"映画",l:1},{w:"sport",m:"スポーツ",l:1},{w:"game",m:"ゲーム",l:1},{w:"art",m:"芸術",l:1},{w:"history",m:"歴史",l:1},{w:"science",m:"科學",l:1},{w:"math",m:"數學",l:1},{w:"English",m:"英語",l:1},{w:"Japanese",m:"日本語",l:1},{w:"animal",m:"動物",l:1},{w:"dog",m:"犬",l:1},{w:"cat",m:"貓",l:1},{w:"bird",m:"鳥",l:1},{w:"fish",m:"魚",l:1},{w:"flower",m:"花",l:1},{w:"tree",m:"木",l:1},{w:"river",m:"川",l:1},{w:"sea",m:"海",l:1},{w:"mountain",m:"山",l:1},{w:"sky",m:"空",l:1},{w:"sun",m:"太陽",l:1},{w:"moon",m:"月",l:1},{w:"star",m:"星",l:1},{w:"rain",m:"雨",l:1},{w:"snow",m:"雪",l:1},{w:"wind",m:"風",l:1},{w:"cloud",m:"雲",l:1}];
 
 const App = {
     db: [], apiKey: "",
@@ -388,8 +375,30 @@ const App = {
             CORE_WORDS.forEach(defW => { if(!App.db.find(d => d.w === defW.w)) App.db.push(this.createObj(defW)); });
             App.db.forEach(w => { if(w.correctCount === undefined) { w.correctCount = 0; w.totalAttempts = 0; } });
         } else { App.db = CORE_WORDS.map(w => this.createObj(w)); }
+        
         App.apiKey = localStorage.getItem('gemini_api_key') || "";
         document.getElementById('api-key-input').value = App.apiKey;
+
+        // 連續天數邏輯強化：精確判定「昨天」與「今天」
+        const lastLogin = localStorage.getItem('last_login_date');
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const todayStr = now.toDateString();
+
+        if (lastLogin !== todayStr) {
+            let streak = parseInt(localStorage.getItem('streak') || 0);
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toDateString();
+
+            if (lastLogin === yesterdayStr) {
+                streak++;
+            } else {
+                streak = 1; // 中斷或首次登入
+            }
+            localStorage.setItem('streak', streak);
+            localStorage.setItem('last_login_date', todayStr);
+        }
         UI.updateHome();
     },
     createObj(raw) { return { w: raw.w, m: raw.m, l: raw.l, status: 'new', interval: 0, nextReview: 0, mastered: false, correctCount: 0, totalAttempts: 0 }; },
@@ -420,8 +429,8 @@ const Router = {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('screen-' + page).classList.add('active');
         if (page === 'home') UI.updateHome();
-        if (page === 'gallery') UI.renderGallery();
-        if (page === 'wordbook') UI.renderWordbook();
+        if (page === 'gallery') { UI.renderGallery(); UI.updateMissionDisplay(); }
+        if (page === 'wordbook') { UI.renderWordbook(); UI.updateMissionDisplay(); }
         if (page === 'admin') Admin.render();
     }
 };
@@ -437,6 +446,14 @@ const UI = {
         document.getElementById('evo-bar-fill').style.width = (status.next === 9999 ? 100 : progress) + '%';
         document.getElementById('words-to-evo').innerText = status.next === 9999 ? "MAX" : (status.next - status.mastered);
         document.getElementById('streak-days').innerText = localStorage.getItem('streak') || 0;
+    },
+    updateMissionDisplay() {
+        const now = Date.now();
+        const reviews = App.db.filter(w => w.mastered && w.nextReview <= now).slice(0, 10).length;
+        const news = App.db.filter(w => !w.mastered).slice(0, 5).length;
+        
+        document.querySelectorAll('.mission-new-count').forEach(el => el.innerText = news);
+        document.querySelectorAll('.mission-review-count').forEach(el => el.innerText = reviews);
     },
     renderGallery() {
         const container = document.getElementById('gallery-container'), mastered = App.db.filter(w => w.mastered).length;
@@ -512,39 +529,18 @@ const Game = {
     queue: [], current: null, total: 0,
     start() {
         const now = Date.now();
-        
-        // 1. 挑選複習單字：已掌握且複習時間已到
         let reviewCandidates = App.db.filter(w => w.mastered && w.nextReview <= now);
-        // 優先權：快要忘記的 (nextReview 越早) 優先，其次看難度級別 l
         reviewCandidates.sort((a, b) => a.nextReview - b.nextReview || a.l - b.l);
-        // 複習上限 10 個
         const reviews = reviewCandidates.slice(0, 10);
-
-        // 2. 挑選新單字：尚未掌握的
         let newCandidates = App.db.filter(w => !w.mastered);
-        
-        // 隨機打亂，確保同等級內的單字順序隨機
         newCandidates.sort(() => Math.random() - 0.5);
-        
-        // 優先權：必須單字 (l 越小) 優先，但維持剛才打亂的結果
         newCandidates.sort((a, b) => a.l - b.l);
-        
-        // 每日新單字 5 個
         const news = newCandidates.slice(0, 5);
-
-        // 3. 合併：複習在前，新單字在後
         this.queue = [...reviews, ...news];
-
         if(!this.queue.length) { UI.alert("完了！", "復習や新規の單語はありません。また明日！"); return; }
-        
         this.total = this.queue.length;
-        this.queue.forEach(w => { 
-            w.sessionStep = (w.mastered ? 3 : 1); 
-            w.sessionWrong = false; 
-        });
-        
-        Router.go('game'); 
-        this.next();
+        this.queue.forEach(w => { w.sessionStep = (w.mastered ? 3 : 1); w.sessionWrong = false; });
+        Router.go('game'); this.next();
     },
     next() {
         const pending = this.queue.filter(w => w.sessionStep <= 3);
