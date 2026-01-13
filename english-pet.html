@@ -186,7 +186,6 @@
         input[type="text"] {
             font-family: 'Fredoka', monospace; font-size: 1.5rem; text-align: center;
             width: 80%; padding: 10px; border: 2px solid #ddd; border-radius: 12px; outline: none;
-            autocorrect: off; autocapitalize: none; spellcheck: false;
         }
         .admin-input { text-align: left; font-size: 0.9rem; padding: 8px; width: 100%; box-sizing: border-box; }
     </style>
@@ -260,7 +259,15 @@
             <div style="font-size:1.8rem; font-weight:bold; margin:10px 0;" id="game-meaning">...</div>
             <div id="ai-sentence-box" class="ai-box"><div id="ai-sentence-content">AIが例文を考えています...</div></div>
             <div id="game-hint" style="font-family:'Fredoka'; font-size:2rem; letter-spacing:2px; margin:20px 0; color:var(--primary);"></div>
-            <input type="text" id="game-input" class="hidden" autocomplete="one-time-code" placeholder="答えを入力">
+            
+            <!-- 關鍵防作弊修復：將屬性正確寫入標籤內 -->
+            <input type="text" id="game-input" class="hidden" 
+                   autocomplete="off" 
+                   autocorrect="off" 
+                   autocapitalize="none" 
+                   spellcheck="false" 
+                   placeholder="答えを入力">
+            
             <div id="feedback-area" style="min-height:30px; margin-top:10px; font-weight:bold;"></div>
         </div>
         <div class="btn-group" id="action-area"></div>
@@ -333,14 +340,14 @@
             <input type="text" id="add-en" placeholder="英語" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
             <input type="text" id="add-jp" placeholder="意味" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
             <select id="add-lvl" class="admin-input" style="border:1px solid #ddd; border-radius:8px;">
-                <option value="1">必須単語</option><option value="2">頻出単語</option><option value="3">上級単語</option>
+                <option value="1">必須単語</option><option value="2">頻出單語</option><option value="3">上級單語</option>
             </select>
             <button class="btn small" style="margin-top:8px; width:100%;" onclick="Admin.add()">リストに追加</button>
         </div>
         
         <div class="admin-table-container"><table id="admin-table"></table></div>
         
-        <!-- 新增匯出按鈕區 -->
+        <!-- 數據匯出按鈕區 -->
         <div style="width:100%; display:flex; flex-direction:column; gap:10px;">
             <button class="btn green" onclick="Admin.exportCSV()">📊 學習數據匯出 (CSV)</button>
             <div style="text-align:center;"><button class="btn outline small" onclick="Admin.resetAll()" style="color:var(--danger); border-color:var(--danger); width:100%;">⚠️ 全データをリセット</button></div>
@@ -383,7 +390,7 @@ const PET_DATA = [
 
 const COMMON_SPEECHES = ["大好きだよ！", "よくできました！", "一緒に頑張ろう！", "英語って楽しいね！", "天才じゃない！？", "キラキラしてるね！"];
 
-const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},{w:"plan",m:"計画",l:1},{w:"enjoy",m:"楽しむ",l:1},{w:"library",m:"図書館",l:1},{w:"visit",m:"訪れる",l:1},{w:"because",m:"なぜなら",l:1},{w:"weather",m:"天気",l:1},{w:"friend",m:"友達",l:1},{w:"school",m:"学校",l:1},{w:"student",m:"生徒",l:1},{w:"family",m:"家族",l:1},{w:"house",m:"家",l:1},{w:"room",m:"部屋",l:1},{w:"study",m:"勉強する",l:1},{w:"play",m:"遊ぶ/弾く",l:1},{w:"watch",m:"見る",l:1},{w:"cook",m:"料理する",l:1},{w:"make",m:"作る",l:1},{w:"buy",m:"買う",l:1},{w:"want",m:"欲しい",l:1},{w:"like",m:"好き",l:1},{w:"have",m:"持っている",l:1},{w:"go",m:"行く",l:1},{w:"come",m:"来る",l:1},{w:"see",m:"會う/見る",l:1},{w:"eat",m:"食べる",l:1},{w:"give",m:"与える",l:1},{w:"take",m:"取る/連れて行く",l:1},{w:"help",m:"助ける",l:1},{w:"know",m:"知っている",l:1},{w:"think",m:"思う",l:1},{w:"say",m:"言う",l:1},{w:"look",m:"見る",l:1},{w:"use",m:"使う",l:1},{w:"find",m:"見つける",l:1},{w:"need",m:"必要とする",l:1},{w:"work",m:"働く",l:1},{w:"try",m:"試す",l:1},{w:"ask",m:"尋ねる",l:1},{w:"talk",m:"話す",l:1},{w:"start",m:"始める",l:1},{w:"finish",m:"終える",l:1},{w:"live",m:"住む",l:1},{w:"stay",m:"滯在する",l:1},{w:"move",m:"動く/引っ越す",l:1},{w:"walk",m:"歩く",l:1},{w:"run",m:"走る",l:1},{w:"read",m:"読む",l:1},{w:"write",m:"書く",l:1},{w:"speak",m:"話す",l:1},{w:"listen",m:"聞く",l:1},{w:"open",m:"開ける",l:1},{w:"close",m:"閉める",l:1},{w:"happy",m:"幸せな",l:1},{w:"sad",m:"悲しい",l:1},{w:"angry",m:"怒った",l:1},{w:"tired",m:"疲れた",l:1},{w:"hungry",m:"空腹の",l:1},{w:"thirsty",m:"喉が渇いた",l:1},{w:"good",m:"良い",l:1},{w:"bad",m:"悪い",l:1},{w:"big",m:"大きい",l:1},{w:"small",m:"小さい",l:1},{w:"long",m:"長い",l:1},{w:"short",m:"短い",l:1},{w:"new",m:"新しい",l:1},{w:"old",m:"古い",l:1},{w:"hot",m:"暑い",l:1},{w:"cold",m:"寒い",l:1},{w:"warm",m:"暖かい",l:1},{w:"cool",m:"涼しい",l:1},{w:"fast",m:"速い",l:1},{w:"slow",m:"遅い",l:1},{w:"easy",m:"簡単な",l:1},{w:"difficult",m:"難しい",l:1},{w:"interesting",m:"面白い",l:1},{w:"boring",m:"退屈な",l:1},{w:"fun",m:"楽しい",l:1},{w:"busy",m:"忙しい",l:1},{w:"free",m:"暇な/自由な",l:1},{w:"favorite",m:"一番好きな",l:1},{w:"popular",m:"人気のある",l:1},{w:"important",m:"重要な",l:1},{w:"beautiful",m:"美しい",l:1},{w:"famous",m:"有名な",l:1},{w:"kind",m:"親切な",l:1},{w:"time",m:"時間",l:1},{w:"day",m:"日",l:1},{w:"week",m:"週",l:1},{w:"month",m:"月",l:1},{w:"year",m:"年",l:1},{w:"morning",m:"朝",l:1},{w:"afternoon",m:"午後",l:1},{w:"evening",m:"夕方",l:1},{w:"night",m:"夜",l:1},{w:"today",m:"今日",l:1},{w:"tomorrow",m:"明日",l:1},{w:"yesterday",m:"昨日",l:1},{w:"summer",m:"夏",l:1},{w:"winter",m:"冬",l:1},{w:"spring",m:"春",l:1},{w:"fall",m:"秋",l:1},{w:"vacation",m:"休暇",l:1},{w:"holiday",m:"休日",l:1},{w:"breakfast",m:"朝食",l:1},{w:"lunch",m:"晝食",l:1},{w:"dinner",m:"夕食",l:1},{w:"food",m:"食べ物",l:1},{w:"water",m:"水",l:1},{w:"book",m:"本",l:1},{w:"pen",m:"ペン",l:1},{w:"computer",m:"コンピュータ",l:1},{w:"phone",m:"電話",l:1},{w:"money",m:"お金",l:1},{w:"bag",m:"鞄",l:1},{w:"clothes",m:"服",l:1},{w:"car",m:"車",l:1},{w:"bus",m:"バス",l:1},{w:"train",m:"電車",l:1},{w:"bike",m:"自転車",l:1},{w:"city",m:"都市",l:1},{w:"park",m:"公園",l:1},{w:"hospital",m:"病院",l:1},{w:"station",m:"駅",l:1},{w:"restaurant",m:"レストラン",l:1},{w:"museum",m:"博物館",l:1},{w:"idea",m:"考え",l:1},{w:"problem",m:"問題",l:1},{w:"question",m:"質問",l:1},{w:"answer",m:"答え",l:1},{w:"story",m:"物語",l:1},{w:"letter",m:"手紙",l:1},{w:"picture",m:"寫真",l:1},{w:"music",m:"音樂",l:1},{w:"movie",m:"映画",l:1},{w:"sport",m:"スポーツ",l:1},{w:"game",m:"ゲーム",l:1},{w:"art",m:"芸術",l:1},{w:"history",m:"歴史",l:1},{w:"science",m:"科學",l:1},{w:"math",m:"數學",l:1},{w:"English",m:"英語",l:1},{w:"Japanese",m:"日本語",l:1},{w:"animal",m:"動物",l:1},{w:"dog",m:"犬",l:1},{w:"cat",m:"貓",l:1},{w:"bird",m:"鳥",l:1},{w:"fish",m:"魚",l:1},{w:"flower",m:"花",l:1},{w:"tree",m:"木",l:1},{w:"river",m:"川",l:1},{w:"sea",m:"海",l:1},{w:"mountain",m:"山",l:1},{w:"sky",m:"空",l:1},{w:"sun",m:"太陽",l:1},{w:"moon",m:"月",l:1},{w:"star",m:"星",l:1},{w:"rain",m:"雨",l:1},{w:"snow",m:"雪",l:1},{w:"wind",m:"風",l:1},{w:"cloud",m:"雲",l:1}];
+const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},{w:"plan",m:"計画",l:1},{w:"enjoy",m:"楽しむ",l:1},{w:"library",m:"図書館",l:1},{w:"visit",m:"訪れる",l:1},{w:"because",m:"なぜなら",l:1},{w:"weather",m:"天気",l:1},{w:"friend",m:"友達",l:1},{w:"school",m:"学校",l:1},{w:"student",m:"生徒",l:1},{w:"family",m:"家族",l:1},{w:"house",m:"家",l:1},{w:"room",m:"部屋",l:1},{w:"study",m:"勉強する",l:1},{w:"play",m:"遊ぶ/弾く",l:1},{w:"watch",m:"見る",l:1},{w:"cook",m:"料理する",l:1},{w:"make",m:"作る",l:1},{w:"buy",m:"買う",l:1},{w:"want",m:"欲しい",l:1},{w:"like",m:"好き",l:1},{w:"have",m:"持っている",l:1},{w:"go",m:"行く",l:1},{w:"come",m:"来る",l:1},{w:"see",m:"會う/見る",l:1},{w:"eat",m:"食べる",l:1},{w:"give",m:"與える",l:1},{w:"take",m:"取る/連れて行く",l:1},{w:"help",m:"助ける",l:1},{w:"know",m:"知っている",l:1},{w:"think",m:"思う",l:1},{w:"say",m:"言う",l:1},{w:"look",m:"見る",l:1},{w:"use",m:"使う",l:1},{w:"find",m:"見つける",l:1},{w:"need",m:"必要とする",l:1},{w:"work",m:"働く",l:1},{w:"try",m:"試す",l:1},{w:"ask",m:"尋ねる",l:1},{w:"talk",m:"話す",l:1},{w:"start",m:"始める",l:1},{w:"finish",m:"終える",l:1},{w:"live",m:"住む",l:1},{w:"stay",m:"滯在する",l:1},{w:"move",m:"動く/引っ越す",l:1},{w:"walk",m:"歩く",l:1},{w:"run",m:"走る",l:1},{w:"read",m:"読む",l:1},{w:"write",m:"書く",l:1},{w:"speak",m:"話す",l:1},{w:"listen",m:"聞く",l:1},{w:"open",m:"開ける",l:1},{w:"close",m:"閉める",l:1},{w:"happy",m:"幸せな",l:1},{w:"sad",m:"悲しい",l:1},{w:"angry",m:"怒った",l:1},{w:"tired",m:"疲れた",l:1},{w:"hungry",m:"空腹の",l:1},{w:"thirsty",m:"喉が渇いた",l:1},{w:"good",m:"良い",l:1},{w:"bad",m:"悪い",l:1},{w:"big",m:"大きい",l:1},{w:"small",m:"小さい",l:1},{w:"long",m:"長い",l:1},{w:"short",m:"短い",l:1},{w:"new",m:"新しい",l:1},{w:"old",m:"古い",l:1},{w:"hot",m:"暑い",l:1},{w:"cold",m:"寒い",l:1},{w:"warm",m:"暖かい",l:1},{w:"cool",m:"涼しい",l:1},{w:"fast",m:"速い",l:1},{w:"slow",m:"遅い",l:1},{w:"easy",m:"簡単な",l:1},{w:"difficult",m:"難しい",l:1},{w:"interesting",m:"面白い",l:1},{w:"boring",m:"退屈な",l:1},{w:"fun",m:"楽しい",l:1},{w:"busy",m:"忙しい",l:1},{w:"free",m:"暇な/自由な",l:1},{w:"favorite",m:"一番好きな",l:1},{w:"popular",m:"人気のある",l:1},{w:"important",m:"重要な",l:1},{w:"beautiful",m:"美しい",l:1},{w:"famous",m:"有名な",l:1},{w:"kind",m:"親切な",l:1},{w:"time",m:"時間",l:1},{w:"day",m:"日",l:1},{w:"week",m:"週",l:1},{w:"month",m:"月",l:1},{w:"year",m:"年",l:1},{w:"morning",m:"朝",l:1},{w:"afternoon",m:"午後",l:1},{w:"evening",m:"夕方",l:1},{w:"night",m:"夜",l:1},{w:"today",m:"今日",l:1},{w:"tomorrow",m:"明日",l:1},{w:"yesterday",m:"昨日",l:1},{w:"summer",m:"夏",l:1},{w:"winter",m:"冬",l:1},{w:"spring",m:"春",l:1},{w:"fall",m:"秋",l:1},{w:"vacation",m:"休暇",l:1},{w:"holiday",m:"休日",l:1},{w:"breakfast",m:"朝食",l:1},{w:"lunch",m:"晝食",l:1},{w:"dinner",m:"夕食",l:1},{w:"food",m:"食べ物",l:1},{w:"water",m:"水",l:1},{w:"book",m:"本",l:1},{w:"pen",m:"ペン",l:1},{w:"computer",m:"コンピュータ",l:1},{w:"phone",m:"電話",l:1},{w:"money",m:"お金",l:1},{w:"bag",m:"鞄",l:1},{w:"clothes",m:"服",l:1},{w:"car",m:"車",l:1},{w:"bus",m:"バス",l:1},{w:"train",m:"電車",l:1},{w:"bike",m:"自転車",l:1},{w:"city",m:"都市",l:1},{w:"park",m:"公園",l:1},{w:"hospital",m:"病院",l:1},{w:"station",m:"駅",l:1},{w:"restaurant",m:"レストラン",l:1},{w:"museum",m:"博物館",l:1},{w:"idea",m:"考え",l:1},{w:"problem",m:"問題",l:1},{w:"question",m:"質問",l:1},{w:"answer",m:"答え",l:1},{w:"story",m:"物語",l:1},{w:"letter",m:"手紙",l:1},{w:"picture",m:"寫真",l:1},{w:"music",m:"音樂",l:1},{w:"movie",m:"映画",l:1},{w:"sport",m:"スポーツ",l:1},{w:"game",m:"ゲーム",l:1},{w:"art",m:"芸術",l:1},{w:"history",m:"歴史",l:1},{w:"science",m:"科學",l:1},{w:"math",m:"數學",l:1},{w:"English",m:"英語",l:1},{w:"Japanese",m:"日本語",l:1},{w:"animal",m:"動物",l:1},{w:"dog",m:"犬",l:1},{w:"cat",m:"貓",l:1},{w:"bird",m:"鳥",l:1},{w:"fish",m:"魚",l:1},{w:"flower",m:"花",l:1},{w:"tree",m:"木",l:1},{w:"river",m:"川",l:1},{w:"sea",m:"海",l:1},{w:"mountain",m:"山",l:1},{w:"sky",m:"空",l:1},{w:"sun",m:"太陽",l:1},{w:"moon",m:"月",l:1},{w:"star",m:"星",l:1},{w:"rain",m:"雨",l:1},{w:"snow",m:"雪",l:1},{w:"wind",m:"風",l:1},{w:"cloud",m:"雲",l:1}];
 
 const App = {
     db: [], apiKey: "",
@@ -395,6 +402,7 @@ const App = {
             App.db.forEach(w => { 
                 if(w.correctCount === undefined) { w.correctCount = 0; w.totalAttempts = 0; }
                 if(w.lastReviewTime === undefined) { w.lastReviewTime = 0; }
+                if(w.interval === undefined) { w.interval = 0; }
             });
         } else { App.db = CORE_WORDS.map(w => this.createObj(w)); }
         
@@ -540,12 +548,58 @@ const Gemini = {
         if (text) content.innerText = text; else content.innerText = "生成失敗";
     },
     async generateStory(target) {
-        const boxId = target === 'home' ? 'home-ai-box' : 'result-ai-box', contentId = target === 'home' ? 'home-ai-content' : 'result-ai-content';
-        const box = document.getElementById(boxId), content = document.getElementById(contentId);
-        box.classList.add('show'); content.innerText = "AIが物語を執筆中...";
-        const words = App.db.filter(w => w.mastered).slice(0, 5).map(w => w.w).join(', ') || "famous, weekend, plan";
-        const text = await this.call(`Write a very short story (30 words) for children using: ${words}. Bold the target words like **word**. At the end, say "読んでくれてありがとう！" in Japanese.`);
-        if (text) content.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); else content.innerText = "物語の生成に失敗しました。";
+        const boxId = target === 'home' ? 'home-ai-box' : 'result-ai-box';
+        const contentId = target === 'home' ? 'home-ai-content' : 'result-ai-content';
+        const box = document.getElementById(boxId);
+        const content = document.getElementById(contentId);
+        box.classList.add('show');
+        content.innerText = "AIが物語を執筆中...";
+
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const todayTs = startOfToday.getTime();
+
+        let sourceA = [];
+        if (Game.queue && Game.queue.length > 0) {
+            sourceA = Game.queue.map(w => w.w);
+        } else {
+            sourceA = App.db.filter(w => w.lastReviewTime >= todayTs).map(w => w.w);
+        }
+
+        const sourceB = App.db.filter(w => w.totalAttempts > 0 && (w.correctCount / w.totalAttempts) < 0.6).map(w => w.w);
+
+        let finalSelection = [];
+        const shuffledA = [...sourceA].sort(() => Math.random() - 0.5);
+        finalSelection.push(...shuffledA.slice(0, 3));
+
+        const filteredB = sourceB.filter(w => !finalSelection.includes(w));
+        const shuffledB = filteredB.sort(() => Math.random() - 0.5);
+        finalSelection.push(...shuffledB.slice(0, 2));
+
+        if (finalSelection.length < 5) {
+            const others = App.db.filter(w => w.mastered && !finalSelection.includes(w)).map(w => w.w);
+            others.sort(() => Math.random() - 0.5);
+            finalSelection.push(...others.slice(0, 5 - finalSelection.length));
+        }
+        
+        if (finalSelection.length < 5) {
+            const allRemaining = App.db.filter(w => !finalSelection.includes(w)).map(w => w.w);
+            allRemaining.sort(() => Math.random() - 0.5);
+            finalSelection.push(...allRemaining.slice(0, 5 - finalSelection.length));
+        }
+
+        const wordsStr = finalSelection.join(', ');
+        const prompt = `Write a short, engaging story for children (approx. 50 words) in English using these 5 words: ${wordsStr}. 
+        Natural flow is important. 
+        Crucially, you MUST wrap each of these 5 words in double asterisks like **word** in the text. 
+        At the end, add "読んでくれてありがとう！ママに音讀してあげてね！" in Japanese.`;
+
+        const text = await this.call(prompt);
+        if (text) {
+            content.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        } else {
+            content.innerText = "物語の生成に失敗しました。";
+        }
     }
 };
 
@@ -620,39 +674,43 @@ const Admin = {
         });
     },
     exportCSV() {
-        const now = Date.now();
         const dateObj = new Date();
-        const today = dateObj.toISOString().split('T')[0];
-        const fileNameDate = today.replace(/-/g, '');
+        const todayStr = dateObj.toISOString().split('T')[0];
+        const fileNameDate = todayStr.replace(/-/g, '');
         const streak = localStorage.getItem('streak') || 0;
         
-        const masteredCount = App.db.filter(w => w.mastered).length;
-        const newsCount = App.db.filter(w => w.status === 'new' && !w.mastered).length;
+        const headers = [
+            "Report Date", "Streak", "Word", "Meaning", "Level", "CorrectCount", 
+            "TotalAttempts", "Accuracy(%)", "Current Interval (Days)", "Last Review Date"
+        ];
         
-        let totalCorrect = 0;
-        let totalAttempts = 0;
+        let csvRows = [headers.join(",")];
+        
         App.db.forEach(w => {
-            totalCorrect += (w.correctCount || 0);
-            totalAttempts += (w.totalAttempts || 0);
+            const acc = w.totalAttempts > 0 ? ((w.correctCount / w.totalAttempts) * 100).toFixed(1) : 0;
+            const lastRevDate = w.lastReviewTime ? new Date(w.lastReviewTime).toISOString().split('T')[0] : "Never";
+            const row = [
+                todayStr,
+                streak,
+                w.w,
+                `"${w.m.replace(/"/g, '""')}"`,
+                w.l,
+                w.correctCount || 0,
+                w.totalAttempts || 0,
+                acc,
+                w.interval || 0,
+                lastRevDate
+            ];
+            csvRows.push(row.join(","));
         });
-        const accuracy = totalAttempts > 0 ? ((totalCorrect / totalAttempts) * 100).toFixed(1) : 0;
         
-        const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
-        const weeklyActivity = App.db.filter(w => w.lastReviewTime && w.lastReviewTime > weekAgo).length;
-        
-        const weakWords = App.db.filter(w => w.totalAttempts > 0 && (w.correctCount / w.totalAttempts) < 0.6)
-                                .map(w => w.w).join(';');
-        
-        const headers = ["Date", "Streak", "Total Mastered", "Total New", "Overall Accuracy (%)", "Weekly Activity", "Weak Words"];
-        const rows = [today, streak, masteredCount, newsCount, accuracy, weeklyActivity, `"${weakWords}"`];
-        
-        const csvContent = headers.join(",") + "\n" + rows.join(",");
+        const csvContent = csvRows.join("\n");
         const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         
         link.setAttribute("href", url);
-        link.setAttribute("download", `eiken3_report_${fileNameDate}.csv`);
+        link.setAttribute("download", `eiken3_detailed_report_${fileNameDate}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
