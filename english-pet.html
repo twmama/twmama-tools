@@ -183,7 +183,7 @@
         }
         .ai-box.show { display: block; animation: popIn 0.3s; }
 
-        input[type="text"] {
+        input[type="text"], input[type="email"] {
             font-family: 'Fredoka', monospace; font-size: 1.5rem; text-align: center;
             width: 80%; padding: 10px; border: 2px solid #ddd; border-radius: 12px; outline: none;
         }
@@ -251,7 +251,7 @@
         </div>
         <div class="flashcard" id="card-box">
             <div class="step-label" id="step-label">Step 1</div>
-            <div style="margin-bottom:10px;"><span class="tag" id="game-word-tag">必須単語</span></div>
+            <div style="margin-bottom:10px;"><span class="tag" id="game-word-tag">必須單語</span></div>
             <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
                 <button onclick="Game.speakWord()" style="background:#fff; border:2px solid #eee; border-radius:50%; width:50px; height:50px; font-size:1.5rem; cursor:pointer;">🔊</button>
                 <button id="ai-sentence-btn" onclick="Gemini.generateSentence()" style="background:#f3e5f5; border:2px solid var(--ai-color); border-radius:50%; width:50px; height:50px; font-size:1.2rem; cursor:pointer;">✨</button>
@@ -260,8 +260,9 @@
             <div id="ai-sentence-box" class="ai-box"><div id="ai-sentence-content">AIが例文を考えています...</div></div>
             <div id="game-hint" style="font-family:'Fredoka'; font-size:2rem; letter-spacing:2px; margin:20px 0; color:var(--primary);"></div>
             
-            <!-- 關鍵防作弊修復：將屬性正確寫入標籤內 -->
-            <input type="text" id="game-input" class="hidden" 
+            <!-- 採用策略 A + B：將 type 改為 email 並加入 inputmode="email" 來更強制地關閉校正 -->
+            <input type="email" id="game-input" class="hidden" 
+                   inputmode="email"
                    autocomplete="off" 
                    autocorrect="off" 
                    autocapitalize="none" 
@@ -340,7 +341,7 @@
             <input type="text" id="add-en" placeholder="英語" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
             <input type="text" id="add-jp" placeholder="意味" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
             <select id="add-lvl" class="admin-input" style="border:1px solid #ddd; border-radius:8px;">
-                <option value="1">必須単語</option><option value="2">頻出單語</option><option value="3">上級單語</option>
+                <option value="1">必須単語</option><option value="2">頻出単語</option><option value="3">上級単語</option>
             </select>
             <button class="btn small" style="margin-top:8px; width:100%;" onclick="Admin.add()">リストに追加</button>
         </div>
@@ -368,7 +369,7 @@
 
 <script>
 const APP_STORAGE_KEY = 'spellquest_db_v7';
-const WORD_LEVELS = { 1: "必須単語", 2: "頻出単語", 3: "上級単語" };
+const WORD_LEVELS = { 1: "必須單語", 2: "頻出單語", 3: "上級單語" };
 
 const PET_DATA = [
     { t: 0, e: "🥚", n: "卵", s: ["ゆらゆら...", "しーっ、寝てるよ", "トントンして！"] },
@@ -481,8 +482,11 @@ const UI = {
     },
     updateMissionDisplay() {
         const now = Date.now();
-        const reviews = App.db.filter(w => w.mastered && w.nextReview <= now).slice(0, 10).length;
-        const news = App.db.filter(w => !w.mastered).slice(0, 5).length;
+        const dateStr = new Date().toISOString().split('T')[0];
+        const dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${dateStr}`) || 0);
+        
+        const reviews = App.db.filter(w => w.mastered && w.nextReview <= now).slice(0, 15).length;
+        const news = App.db.filter(w => !w.mastered).slice(0, Math.max(0, 5 - dailyNewCount)).length;
         
         document.querySelectorAll('.mission-new-count').forEach(el => el.innerText = news);
         document.querySelectorAll('.mission-review-count').forEach(el => el.innerText = reviews);
@@ -607,18 +611,34 @@ const Game = {
     queue: [], current: null, total: 0,
     start() {
         const now = Date.now();
+        const dateStr = new Date().toISOString().split('T')[0];
+        const dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${dateStr}`) || 0);
+        
         let reviewCandidates = App.db.filter(w => w.mastered && w.nextReview <= now);
         reviewCandidates.sort((a, b) => a.nextReview - b.nextReview || a.l - b.l);
-        const reviews = reviewCandidates.slice(0, 10);
-        let newCandidates = App.db.filter(w => !w.mastered);
-        newCandidates.sort(() => Math.random() - 0.5);
-        newCandidates.sort((a, b) => a.l - b.l);
-        const news = newCandidates.slice(0, 5);
+        const reviews = reviewCandidates.slice(0, 15);
+
+        let news = [];
+        const remainingNewQuota = 5 - dailyNewCount;
+        if (remainingNewQuota > 0) {
+            let newCandidates = App.db.filter(w => !w.mastered);
+            newCandidates.sort(() => Math.random() - 0.5);
+            newCandidates.sort((a, b) => a.l - b.l);
+            news = newCandidates.slice(0, remainingNewQuota);
+        }
+
         this.queue = [...reviews, ...news];
-        if(!this.queue.length) { UI.alert("完了！", "復習や新規の単語はありません。また明日！"); return; }
+
+        if(!this.queue.length) { UI.alert("完了！", "今日のタスクはありません。また明日！"); return; }
+        
         this.total = this.queue.length;
-        this.queue.forEach(w => { w.sessionStep = (w.mastered ? 3 : 1); w.sessionWrong = false; });
-        Router.go('game'); this.next();
+        this.queue.forEach(w => { 
+            w.sessionStep = (w.mastered ? 3 : 1); 
+            w.sessionWrong = false; 
+        });
+        
+        Router.go('game'); 
+        this.next();
     },
     next() {
         const pending = this.queue.filter(w => w.sessionStep <= 3);
@@ -648,7 +668,19 @@ const Game = {
         
         if(val === this.current.w.toLowerCase()) {
             this.current.correctCount++;
-            if(this.current.sessionStep === 2) this.current.sessionStep = 3; else { this.updateSM2(); this.current.sessionStep = 4; }
+            if(this.current.sessionStep === 2) this.current.sessionStep = 3; 
+            else { 
+                const wasNew = !this.current.mastered;
+                this.updateSM2(); 
+                this.current.sessionStep = 4; 
+                
+                if (wasNew) {
+                    const dateStr = new Date().toISOString().split('T')[0];
+                    const key = `daily_new_count_${dateStr}`;
+                    let count = parseInt(localStorage.getItem(key) || 0);
+                    localStorage.setItem(key, count + 1);
+                }
+            }
             this.next();
         } else { this.current.sessionWrong = true; UI.alert("おっと！", `正解は [ ${this.current.w} ] です。覚え直そう！`); this.current.sessionStep = 1; this.next(); }
     },
@@ -678,37 +710,18 @@ const Admin = {
         const todayStr = dateObj.toISOString().split('T')[0];
         const fileNameDate = todayStr.replace(/-/g, '');
         const streak = localStorage.getItem('streak') || 0;
-        
-        const headers = [
-            "Report Date", "Streak", "Word", "Meaning", "Level", "CorrectCount", 
-            "TotalAttempts", "Accuracy(%)", "Current Interval (Days)", "Last Review Date"
-        ];
-        
+        const headers = ["Report Date", "Streak", "Word", "Meaning", "Level", "CorrectCount", "TotalAttempts", "Accuracy(%)", "Current Interval (Days)", "Last Review Date"];
         let csvRows = [headers.join(",")];
-        
         App.db.forEach(w => {
             const acc = w.totalAttempts > 0 ? ((w.correctCount / w.totalAttempts) * 100).toFixed(1) : 0;
             const lastRevDate = w.lastReviewTime ? new Date(w.lastReviewTime).toISOString().split('T')[0] : "Never";
-            const row = [
-                todayStr,
-                streak,
-                w.w,
-                `"${w.m.replace(/"/g, '""')}"`,
-                w.l,
-                w.correctCount || 0,
-                w.totalAttempts || 0,
-                acc,
-                w.interval || 0,
-                lastRevDate
-            ];
+            const row = [todayStr, streak, w.w, `"${w.m.replace(/"/g, '""')}"`, w.l, w.correctCount || 0, w.totalAttempts || 0, acc, w.interval || 0, lastRevDate];
             csvRows.push(row.join(","));
         });
-        
         const csvContent = csvRows.join("\n");
         const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        
         link.setAttribute("href", url);
         link.setAttribute("download", `eiken3_detailed_report_${fileNameDate}.csv`);
         link.style.visibility = 'hidden';
