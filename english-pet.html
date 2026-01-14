@@ -187,7 +187,7 @@
             font-family: 'Fredoka', monospace; font-size: 1.5rem; text-align: center;
             width: 80%; padding: 10px; border: 2px solid #ddd; border-radius: 12px; outline: none;
         }
-        .admin-input { text-align: left; font-size: 0.9rem; padding: 8px; width: 100%; box-sizing: border-box; }
+        .admin-input { text-align: left; font-size: 0.95rem; padding: 12px; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -251,7 +251,7 @@
         </div>
         <div class="flashcard" id="card-box">
             <div class="step-label" id="step-label">Step 1</div>
-            <div style="margin-bottom:10px;"><span class="tag" id="game-word-tag">必須單語</span></div>
+            <div style="margin-bottom:10px;"><span class="tag" id="game-word-tag">必須単語</span></div>
             <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
                 <button onclick="Game.speakWord()" style="background:#fff; border:2px solid #eee; border-radius:50%; width:50px; height:50px; font-size:1.5rem; cursor:pointer;">🔊</button>
                 <button id="ai-sentence-btn" onclick="Gemini.generateSentence()" style="background:#f3e5f5; border:2px solid var(--ai-color); border-radius:50%; width:50px; height:50px; font-size:1.2rem; cursor:pointer;">✨</button>
@@ -260,14 +260,14 @@
             <div id="ai-sentence-box" class="ai-box"><div id="ai-sentence-content">AIが例文を考えています...</div></div>
             <div id="game-hint" style="font-family:'Fredoka'; font-size:2rem; letter-spacing:2px; margin:20px 0; color:var(--primary);"></div>
             
-            <!-- 採用策略 A + B：將 type 改為 email 並加入 inputmode="email" 來更強制地關閉校正 -->
-            <input type="email" id="game-input" class="hidden" 
+            <!-- Android Chrome 防作弊屬性組 -->
+            <input type="text" id="game-input" class="hidden" 
                    inputmode="email"
-                   autocomplete="off" 
+                   autocomplete="new-password" 
                    autocorrect="off" 
                    autocapitalize="none" 
                    spellcheck="false" 
-                   placeholder="答えを入力">
+                   placeholder="單語をすべて入力">
             
             <div id="feedback-area" style="min-height:30px; margin-top:10px; font-weight:bold;"></div>
         </div>
@@ -332,8 +332,9 @@
     <div id="screen-admin" class="screen">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h2>⚙️ 管理＆設定</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
         <div style="width:100%; background:#f8f9fa; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
-            <div style="font-weight:bold; margin-bottom:5px;">🔍 APIキー設定</div>
-            <input type="password" id="api-key-input" placeholder="Gemini API Key" class="admin-input" style="border:1px solid #ddd; border-radius:8px;">
+            <div style="font-weight:bold; margin-bottom:5px;">🔍 APIキー設定 (Gemini)</div>
+            <!-- API Key 輸入框改為 text 類型並增加高度，確保方便貼上 -->
+            <input type="text" id="api-key-input" placeholder="貼り付けしてください" class="admin-input" style="border:1px solid #ddd; border-radius:8px; font-family: monospace;">
             <button class="btn small ai" style="margin-top:8px; width:100%;" onclick="Admin.saveApiKey()">APIキーを保存</button>
         </div>
         <div style="width:100%; background:#fff3e0; padding:12px; border-radius:15px; border:1px solid #ffe0b2; margin-bottom:15px; box-sizing:border-box;">
@@ -341,7 +342,7 @@
             <input type="text" id="add-en" placeholder="英語" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
             <input type="text" id="add-jp" placeholder="意味" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
             <select id="add-lvl" class="admin-input" style="border:1px solid #ddd; border-radius:8px;">
-                <option value="1">必須単語</option><option value="2">頻出単語</option><option value="3">上級単語</option>
+                <option value="1">必須単語</option><option value="2">頻出単語</option><option value="3">上級單語</option>
             </select>
             <button class="btn small" style="margin-top:8px; width:100%;" onclick="Admin.add()">リストに追加</button>
         </div>
@@ -369,7 +370,7 @@
 
 <script>
 const APP_STORAGE_KEY = 'spellquest_db_v7';
-const WORD_LEVELS = { 1: "必須單語", 2: "頻出單語", 3: "上級單語" };
+const WORD_LEVELS = { 1: "必須単語", 2: "頻出単語", 3: "上級単語" };
 
 const PET_DATA = [
     { t: 0, e: "🥚", n: "卵", s: ["ゆらゆら...", "しーっ、寝てるよ", "トントンして！"] },
@@ -650,16 +651,38 @@ const Game = {
     },
     render() {
         const w = this.current, step = w.sessionStep;
+        const input = document.getElementById('game-input');
+        
         document.getElementById('game-meaning').innerText = w.m;
         document.getElementById('game-word-tag').innerText = WORD_LEVELS[w.l];
         document.getElementById('game-word-tag').className = `tag lvl-${w.l}`;
         document.getElementById('step-label').innerText = "Step " + step + (step===1?": 覚える":step===2?": 穴埋め":": テスト");
         document.getElementById('ai-sentence-box').classList.remove('show');
         document.getElementById('ai-sentence-btn').classList.toggle('hidden', step !== 1);
-        const hint = document.getElementById('game-hint'), input = document.getElementById('game-input'), actions = document.getElementById('action-area');
+        const hint = document.getElementById('game-hint'), actions = document.getElementById('action-area');
+        
         this.speakWord();
-        if(step === 1) { hint.innerText = w.w; hint.classList.remove('hidden'); input.classList.add('hidden'); actions.innerHTML = `<button class="btn" onclick="Game.current.sessionStep=2; Game.next()">覚えた！</button>`; }
-        else { hint.innerText = (step === 2) ? w.w.replace(/[aeiou]/g, '_') : ""; hint.classList.toggle('hidden', step === 3); input.classList.remove('hidden'); input.value = ''; input.focus(); actions.innerHTML = `<button class="btn" onclick="Game.check()">チェック！</button>`; }
+
+        if(step === 1) {
+            hint.innerText = w.w; hint.classList.remove('hidden');
+            input.classList.add('hidden');
+            actions.innerHTML = `<button class="btn" onclick="Game.current.sessionStep=2; Game.next()">覚えた！</button>`;
+        } else {
+            hint.innerText = (step === 2) ? w.w.replace(/[aeiou]/g, '_') : "";
+            hint.classList.toggle('hidden', step === 3);
+            input.classList.remove('hidden'); 
+            input.value = ''; 
+            
+            // Android Chrome 極限防禦策略
+            input.readOnly = true; 
+            input.name = "answer_" + Math.random(); 
+            setTimeout(() => {
+                input.readOnly = false; 
+                input.focus();
+            }, 250);
+
+            actions.innerHTML = `<button class="btn" onclick="Game.check()">チェック！</button>`;
+        }
     },
     check() {
         const val = document.getElementById('game-input').value.trim().toLowerCase();
