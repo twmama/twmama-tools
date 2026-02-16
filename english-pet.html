@@ -182,7 +182,7 @@
         }
         .ai-box.show { display: block; animation: popIn 0.3s; }
 
-        input[type="text"], input[type="email"] {
+        input[type="text"], input[type="email"], input[type="number"] {
             font-family: 'Fredoka', monospace; font-size: 1.5rem; text-align: center;
             width: 80%; padding: 10px; border: 2px solid #ddd; border-radius: 12px; outline: none;
         }
@@ -256,15 +256,7 @@
             <div style="font-size:1.8rem; font-weight:bold; margin:10px 0;" id="game-meaning">...</div>
             <div id="ai-sentence-box" class="ai-box"><div id="ai-sentence-content">AIが例文を考えています...</div></div>
             <div id="game-hint" style="font-family:'Fredoka'; font-size:2rem; letter-spacing:2px; margin:20px 0; color:var(--primary);"></div>
-            
-            <!-- 修改 1: 修復輸入框，徹底禁用校正、自動完成與大寫 -->
-            <input type="text" id="game-input" class="hidden" 
-                   autocomplete="off" 
-                   autocorrect="off" 
-                   autocapitalize="off" 
-                   spellcheck="false" 
-                   placeholder="答えを入力">
-            
+            <input type="text" id="game-input" class="hidden" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="答えを入力">
             <div id="feedback-area" style="min-height:30px; margin-top:10px; font-weight:bold;"></div>
         </div>
         <div class="btn-group" id="action-area"></div>
@@ -312,10 +304,32 @@
     <div id="screen-admin" class="screen">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h2>⚙️ 管理＆設定</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
         
+        <!-- 使用者暱稱設定 -->
         <div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
             <div style="font-weight:bold; margin-bottom:5px;">👦 你的名字 (Nickname)</div>
             <input type="text" id="nickname-input" class="admin-input" style="border:1px solid #ddd; border-radius:8px;" placeholder="例: Da-bao">
             <button class="btn small" style="margin-top:8px; width:100%; background:#a55eea; box-shadow:0 3px 0 #8854d0;" onclick="Admin.saveNickname()">名字を保存</button>
+        </div>
+
+        <!-- ⚡ 每日任務量設定 -->
+        <div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:10px;">⚡ 每日任務量設定 (Daily Limits)</div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <label style="font-size:0.9rem;">🆕 新規単語 (New):</label>
+                <input type="number" id="limit-new" class="admin-input" style="width:80px; text-align:center; padding:5px; font-size:1.1rem;" min="0">
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <label style="font-size:0.9rem;">🔄 復習単語 (Review):</label>
+                <input type="number" id="limit-review" class="admin-input" style="width:80px; text-align:center; padding:5px; font-size:1.1rem;" min="0">
+            </div>
+
+            <div style="font-size:0.75rem; color:#666; margin-bottom:8px; line-height:1.4;">
+               *復習が溜まっている時は、新規を0に、復習を30に設定することをお勧めします。
+            </div>
+
+            <button class="btn small" style="width:100%; background:#2ecc71; box-shadow:0 3px 0 #27ae60;" onclick="Admin.saveLimits()">設定を保存</button>
         </div>
 
         <div style="width:100%; background:#f8f9fa; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
@@ -364,17 +378,17 @@ const PET_DATA = [
     { t: 0, e: "🥚", n: "不思議な卵", desc: "まだ静かに眠っている。時々揺れるのは夢を見ているから？", persona: "あなたは『眠っている卵』です。まだ喋れませんが、夢の中でテレパシーを送っています。とても眠そうで、のんびりした口調です。", s: ["{name}、むにゃ...", "Zzz...", "（揺れている...）"] },
     { t: 10, e: "🐣", n: "ピヨちゃん", desc: "殻を破って出てきたばかり！全てが新しくて興味津々。", persona: "あなたは『生まれたてのヒヨコ』です。好奇心旺盛で元気いっぱい！語尾に必ず「ッピ！」「ピヨ！」を付けます。子供っぽい話し方です。", s: ["{name}！おなかすいたッピ！", "これなぁに？", "もっと遊びたいッピ！"] },
     { t: 30, e: "🐥", n: "小鳥のチッチ", desc: "羽ばたく練習中。少し飛べるようになって自信がついてきた。", persona: "あなたは『練習熱心な小鳥』です。一生懸命で、少し生意気だけど可愛い性格。語尾は「チュン！」です。", s: ["飛べるもん！", "高いところが好きチュン！", "{name}、風が気持ちいいチュン！"] },
-    { t: 60, e: "🐦", n: "青い鳥", desc: "幸せを運ぶと言われる鳥。歌うのが大好き。", persona: "あなたは『幸せの青い鳥』です。とても優しくて、歌うような口調で話します。相手を励ますのが得意です。語尾は「ルン♪」や「だね♪」。", s: ["いい予感がするルン♪", "歌を歌おう♪", "{name}は素敵だね♪"] },
+    { t: 60, e: "🐦", n: "青い鳥", desc: "幸せを運ぶと言われる鳥. 歌うのが大好き。", persona: "あなたは『幸せの青い鳥』です。とても優しくて、歌うような口調で話します。相手を励ますのが得意です。語尾は「ルン♪」や「だね♪」。", s: ["いい予感がするルン♪", "歌を歌おう♪", "{name}は素敵だね♪"] },
     { t: 100, e: "🦜", n: "おしゃべりオウム", desc: "英語が大好きで、覚えた言葉をすぐに使いたがる。", persona: "あなたは『陽気なオウム』です。テンションが高く、英語交じりのルー大柴のような話し方をします。「Hello!」「Wow!」などを頻繁に使います。", s: ["Hello! {name}、調子はどう？", "Nice to meet you!", "英語大好き！"] },
     { t: 150, e: "🦉", n: "知恵のフクロウ", desc: "森の賢者。物知りで、夜になると活発になる。", persona: "あなたは『老成したフクロウ博士』です。落ち着いていて、知的な話し方をします。「〜じゃ」「〜だのう」という博士口調で、語尾は「ホウ」です。", s: ["勉強熱心じゃのう", "夜は読書に限るホウ", "知恵こそ力じゃ、{name}"] },
     { t: 220, e: "🦅", n: "ハヤブサ", desc: "空のスピードスター。目標に向かって一直線に飛ぶ。", persona: "あなたは『クールなハヤブサ』です。無駄口を叩かず、キザでカッコいい兄貴分です。スピード感のある短い文章で話します。語尾は「ぜ」。", s: ["遅れるなよ、{name}？", "風を切って進むぜ", "狙った獲物は逃さない"] },
     { t: 300, e: "🦢", n: "優雅な白鳥", desc: "湖の貴族。常に美しくあることを意識している。", persona: "あなたは『優雅な白鳥』です。丁寧語やお嬢様言葉（〜ですわ、〜ますの）を使います。美意識が高く、上品な振る舞いを好みます。", s: ["ごきげんよう、{name}", "優雅に泳ぎましょう", "美しい言葉ですわね"] },
-    { t: 400, e: "🦖", n: "わんぱく恐竜", desc: "力が強くて少し乱暴だけど、実は優しい心の持ち主。", persona: "あなたは『元気なティラノサウルス』です。ガキ大將のような性格で、聲が大きいです。語尾に「ガオ！」「だゾ！」を付けます。", s: ["腹減ったガオ！", "肉食いたいゾ、{name}！", "強くなるんだガオ！"] },
+    { t: 400, e: "🦖", n: "わんぱく恐竜", desc: "力が強くて少し難暴だけど、実は優しい心の持ち主。", persona: "あなたは『元気なティラノサウルス』です。ガキ大將のような性格で、聲が大きいです。語尾に「ガオ！」「だゾ！」を付けます。", s: ["腹減ったガオ！", "肉食いたいゾ、{name}！", "強くなるんだガオ！"] },
     { t: 550, e: "🦕", n: "のんびり首長竜", desc: "長い首で遠くを見渡す。とても気が長くて穏やか。", persona: "あなたは『のんびり屋の首長竜』です。話すのがとてもゆっくりで、間延びした口調です。「〜だねぇ」「〜だよぉ」と話します。", s: ["いい天気だねぇ、{name}", "草がおいしいよぉ...", "急がなくていいよぉ"] },
     { t: 750, e: "🐊", n: "古代ワニ", desc: "水辺のガーディアン。一度噛み付いたら離さない集中力。", persona: "あなたは『ハードボイルドなワニ』です。聲が低く、渋い性格です。粘り強さや集中力を重視します。語尾は「ギザ」或者「だ」。", s: ["集中しろ、{name}...", "チャンスを待つんだ", "俺のキバは鋭いギザ"] },
-    { t: 950, e: "🐉", n: "飛竜ワイバーン", desc: "天空の支配者。嵐の中でも自由に飛び回る。", persona: "あなたは『誇り高き飛竜』です。自信満々で、勇者（ユーザー）を認める相棒のような存在です。「我」「貴様（親愛を込めて）」などを使います。語尾は「ギャオ！」", s: ["我の背に乗れ！", "風など恐れぬ！", "貴様ならできるギャオ！"] },
+    { t: 950, e: "🐉", n: "飛竜ワイバーン", desc: "天空の支配者。嵐の中でも自由に飛び回る。", persona: "あなたは『誇り高き飛竜』です。自信満々で、勇者（ユーザー）を認める相棒のような存在です。「我」「貴様（親愛を込めて）」などを使います。語尾は「ギャオ！」", s: ["馬鹿め！我の背に乗れ！", "風など恐れぬ！", "貴様ならできるギャオ！"] },
     { t: 1100, e: "🐲", n: "伝説の龍", desc: "古の時代から生きる伝説。その言葉には重みがある。", persona: "あなたは『神話の龍』です。古風で威厳のある話し方（〜であろう、〜せよ）をします。ユーザーを「勇者よ」と呼びます。", s: ["よくぞ參った、勇者{name}", "道は開かれた", "汝の力を示せ"] },
-    { t: 1200, e: "🦄", n: "聖なる守護神", desc: "奇跡を呼ぶ存在。純粋な心を持つ者の前にだけ現れる。", persona: "あなたは『神秘的なユニコーン』です。敬語で、聖職者のように穏やかで慈愛に満ちた話し方をします。「〜ですね」「光あれ」などが特徴です。", s: ["光が導くでしょう", "恐れることはありません", "{name}、奇跡を信じなさい"] },
+    { t: 1200, e: "🦄", n: "聖なる守護神", desc: "奇跡を呼ぶ存在. 純粋な心を持つ者の前にだけ現れる。", persona: "あなたは『神秘的なユニコーン』です。敬語で、聖職者のように穏やかで慈愛に滿ちた話し方をします。「〜ですね」「光あれ」などが特徴です。", s: ["光が導くでしょう", "恐れることはありません", "{name}、奇跡を信じなさい"] },
     { t: 1300, e: "🔥", n: "不死鳥フェニックス", desc: "永遠の炎をまとう鳥。何度でも蘇る不屈の精神の象徴。", persona: "あなたは『熱血の不死鳥』です。松岡修造のように超ポジティブで熱苦しい性格です！「燃えろ！」「諦めるな！」が口癖です。", s: ["燃え上がれ！！{name}！", "君の情熱を感じるぞ！", "ネバーギブアップ！！"] }
 ];
 
@@ -384,6 +398,7 @@ const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},
 
 const App = {
     db: [], apiKey: "", userNickname: "大寶",
+    dailyNewLimit: 5, dailyReviewLimit: 15,
     init() {
         const saved = localStorage.getItem(APP_STORAGE_KEY);
         if (saved) {
@@ -397,12 +412,18 @@ const App = {
                         if(w.lastReviewTime === undefined) { w.lastReviewTime = 0; }
                         if(w.interval === undefined) { w.interval = 0; }
                     });
+                    App.save();
                 } else { App.db = CORE_WORDS.map(w => this.createObj(w)); }
             } catch(e) { App.db = CORE_WORDS.map(w => this.createObj(w)); }
         } else { App.db = CORE_WORDS.map(w => this.createObj(w)); }
         
         App.apiKey = localStorage.getItem('gemini_api_key') || "";
         App.userNickname = localStorage.getItem('spellquest_nickname') || "大寶";
+        
+        // 載入每日限額設定
+        App.dailyNewLimit = parseInt(localStorage.getItem('spellquest_newLimit')) || 5;
+        App.dailyReviewLimit = parseInt(localStorage.getItem('spellquest_reviewLimit')) || 15;
+        
         document.getElementById('api-key-input').value = App.apiKey;
 
         const lastLogin = localStorage.getItem('last_login_date');
@@ -481,8 +502,11 @@ const UI = {
         const now = Date.now();
         const dateStr = new Date().toISOString().split('T')[0];
         const dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${dateStr}`) || 0);
-        const reviews = App.db.filter(w => w.mastered && w.nextReview <= now).slice(0, 15).length;
-        const news = App.db.filter(w => !w.mastered).slice(0, Math.max(0, 5 - dailyNewCount)).length;
+        
+        // 任務面板：根據動態設定值顯示
+        const reviews = App.db.filter(w => w.mastered && w.nextReview <= now).slice(0, App.dailyReviewLimit).length;
+        const news = App.db.filter(w => !w.mastered).slice(0, Math.max(0, App.dailyNewLimit - dailyNewCount)).length;
+        
         document.querySelectorAll('.mission-new-count').forEach(el => el.innerText = news);
         document.querySelectorAll('.mission-review-count').forEach(el => el.innerText = reviews);
     },
@@ -563,7 +587,7 @@ const Gemini = {
         2. 稱讚: 誇獎學會了 ${strongWords.map(w=>w.w).join(', ')}。
         3. 秘訣: 針對弱點單字 ${weakWords.map(w=>w.w).join(', ')}，給一個超短記憶口訣。
         4. 結尾: 一句熱血口號。
-        【格式】: 100字以內。使用 HTML 的 <br> 標籤換行，讓版面像詩一樣。英語單字用 <b>太字</b>。`;
+        【格式】: 100字以內。使用 HTML 的 <br> 標籤換行，讓版面像詩一樣裝飾。英語單字用 <b>太字</b>。`;
 
         const res = await this.call(prompt);
         if (res) {
@@ -580,17 +604,14 @@ const Gemini = {
         const text = await this.call(`Create a simple English sentence for a kid using the word "${Game.current.w}". English & Japanese.`);
         if (text) content.innerText = text; else content.innerText = "生成失敗";
     },
-    // 修改 2: 優化 AI 故事生成邏輯
     async generateStory(target) {
         const boxId = target === 'home' ? 'home-ai-box' : 'result-ai-box', contentId = target === 'home' ? 'home-ai-content' : 'result-ai-content';
         const box = document.getElementById(boxId), content = document.getElementById(contentId);
         box.classList.add('show'); content.innerText = "AIが物語を執筆中...";
         
-        // Step A: 計算長度限制
         const level = App.getPetStatus().level;
         const targetLines = level * 2;
         
-        // Step B: 篩選單字
         const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0); const todayTs = startOfToday.getTime();
         let sourceA = Game.queue && Game.queue.length > 0 ? Game.queue.map(w => w.w) : App.db.filter(w => w.lastReviewTime >= todayTs).map(w => w.w);
         const sourceB = App.db.filter(w => w.totalAttempts > 0 && (w.correctCount / w.totalAttempts) < 0.6).map(w => w.w);
@@ -609,18 +630,12 @@ const Gemini = {
             selection.push(...others.slice(0, 5 - selection.length));
         }
         
-        const targetWords = selection.join(', ');
-        
-        // Step C: 建構 Prompt
-        const prompt = `
-        Write a very short story for a child using these words: ${targetWords}.
-        
+        const prompt = `Write a very short story for a child using these words: ${selection.join(', ')}.
         **Constraints:**
         1. **Length**: Exactly ${targetLines} short sentences. (No more, no less).
-        2. **Difficulty**: Eiken Grade 3 level (Simple English). Do NOT use difficult words.
-        3. **Format**: **Start a new line (<br>) for every sentence.** Do not write a continuous paragraph.
+        2. **Difficulty**: Eiken Grade 3 level (Simple English).
+        3. **Format**: **Start a new line (<br>) for every sentence.**
         4. **Content**: Make it funny or interesting for a 10-year-old boy.
-        
         Highlight target words in **bold**.`;
 
         const text = await this.call(prompt);
@@ -636,19 +651,31 @@ const Game = {
     queue: [], current: null, total: 0,
     start() {
         const now = Date.now(), dateStr = new Date().toISOString().split('T')[0], dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${dateStr}`) || 0);
+        
+        // 1. 挑選複習單字：依照動態設定的複習上限
         let reviewCandidates = App.db.filter(w => w.mastered && w.nextReview <= now);
         reviewCandidates.sort((a, b) => a.nextReview - b.nextReview || a.l - b.l);
-        const reviews = reviewCandidates.slice(0, 15);
-        let news = []; const remainingNewQuota = 5 - dailyNewCount;
+        const reviews = reviewCandidates.slice(0, App.dailyReviewLimit);
+        
+        // 2. 挑選新單字：依照動態設定的新規上限
+        let news = []; 
+        const remainingNewQuota = App.dailyNewLimit - dailyNewCount;
         if (remainingNewQuota > 0) {
             let newCandidates = App.db.filter(w => !w.mastered);
             newCandidates.sort(() => Math.random() - 0.5);
             newCandidates.sort((a, b) => a.l - b.l);
             news = newCandidates.slice(0, remainingNewQuota);
         }
+
         this.queue = [...reviews, ...news];
         if(!this.queue.length) { UI.alert("完了！", "今日のタスクはありません。また明日！"); return; }
-        this.total = this.queue.length; this.queue.forEach(w => { w.sessionStep = (w.mastered ? 3 : 1); w.sessionWrong = false; });
+        
+        this.total = this.queue.length; 
+        this.queue.forEach(w => { 
+            w.sessionStep = (w.totalAttempts > 0 || w.mastered) ? 3 : 1; 
+            w.sessionWrong = false; 
+        });
+        
         Router.go('game'); this.next();
     },
     next() {
@@ -701,6 +728,11 @@ const Game = {
 const Admin = {
     render() {
         document.getElementById('nickname-input').value = App.userNickname;
+        
+        // 渲染每日限額數值
+        document.getElementById('limit-new').value = App.dailyNewLimit;
+        document.getElementById('limit-review').value = App.dailyReviewLimit;
+
         const table = document.getElementById('admin-table'); table.innerHTML = `<tr><th>単語</th><th>正解率</th><th>次回</th><th>操作</th></tr>`;
         const sorted = [...App.db].sort((a,b) => a.l - b.l || a.w.localeCompare(b.w));
         sorted.forEach(w => {
@@ -716,6 +748,17 @@ const Admin = {
         localStorage.setItem('spellquest_nickname', val);
         App.userNickname = val;
         UI.alert("成功", "名前を保存しました！");
+    },
+    saveLimits() {
+        const n = parseInt(document.getElementById('limit-new').value);
+        const r = parseInt(document.getElementById('limit-review').value);
+        if(isNaN(n) || isNaN(r) || n < 0 || r < 0) return UI.alert("エラー", "正確な数値を入力してください");
+        App.dailyNewLimit = n;
+        App.dailyReviewLimit = r;
+        localStorage.setItem('spellquest_newLimit', n);
+        localStorage.setItem('spellquest_reviewLimit', r);
+        UI.alert("成功", "設定を保存しました！");
+        UI.updateHome();
     },
     exportCSV() {
         const dateObj = new Date(), todayStr = dateObj.toISOString().split('T')[0], fileNameDate = todayStr.replace(/-/g, ''), streak = localStorage.getItem('streak') || 0;
