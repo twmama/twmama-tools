@@ -3,235 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>台媽的漢字手寫板</title>
+    <title>台媽的漢字手寫板 (Pro v11.0)</title>
     <style>
         /* --- Base Styles --- */
         body { font-family: "Hiragino Kaku Gothic Pro", "Yu Gothic", sans-serif; background-color: #f0f4f8; text-align: center; padding: 10px; color: #333; overscroll-behavior: none; margin: 0; }
-        .container { max-width: 650px; margin: 0 auto; background: white; min-height: 95vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        .container { max-width: 650px; margin: 0 auto; background: white; min-height: 95vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); border-radius: 12px; overflow: hidden; }
         
-        /* Header & Nav */
+        /* Header */
         header { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; }
         h1 { color: #007bff; margin: 0; font-size: 1.2rem; font-weight: bold; }
         .settings-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 5px; }
 
         /* --- Quiz UI --- */
-        #quiz-view { padding: 20px 10px; flex: 1; }
-        .progress-text { font-size: 0.9rem; color: #666; margin-bottom: 5px;}
+        #quiz-view { padding: 20px 10px; flex: 1; display: flex; flex-direction: column; }
+        .progress-text { font-size: 0.9rem; color: #666; margin-bottom: 5px; }
+        
+        /* Start Screen Card */
+        .welcome-card { background: #e8f4fd; padding: 25px; border-radius: 12px; margin: 20px auto; width: 90%; max-width: 400px; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-        /* Canvas Area - Wide Rectangle */
+        /* Canvas Area */
         .canvas-container {
-            position: relative;
-            margin: 0 auto 15px auto;
-            width: 100%;
-            max-width: 600px;
-            height: 220px;
-            border: 3px solid #555;
-            border-radius: 8px;
-            background-color: #fff;
-            touch-action: none; 
-            cursor: crosshair;
-            overflow: hidden;
+            position: relative; margin: 0 auto 15px auto; width: 100%; max-width: 600px; height: 220px;
+            border: 3px solid #555; border-radius: 8px; background-color: #fff;
+            touch-action: none; cursor: crosshair; overflow: hidden;
         }
-
         canvas { display: block; width: 100%; height: 100%; }
-
-        /* River Grid (Vertical Dashed Lines) */
-        .grid-lines {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;
-        }
-        .grid-lines::before, .grid-lines::after {
-            content: ""; position: absolute; top: 10px; bottom: 10px; width: 0; border-left: 2px dashed #ddd;
-        }
-        .grid-lines::before { left: 33.3%; }
-        .grid-lines::after { left: 66.6%; }
+        
+        /* Grid Lines */
+        .grid-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .grid-lines::before, .grid-lines::after { content: ""; position: absolute; top: 10px; bottom: 10px; width: 0; border-left: 2px dashed #ddd; }
+        .grid-lines::before { left: 33.3%; } .grid-lines::after { left: 66.6%; }
 
         /* Question Display */
         .question-box { margin-bottom: 10px; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .question-text { font-size: 2.2rem; font-weight: bold; margin: 5px 0; letter-spacing: 2px; }
         .hint-text { font-size: 1rem; color: #d35400; background: #fff3e0; display: inline-block; padding: 3px 12px; border-radius: 15px; margin-top: 5px; }
 
+        /* Answer Details */
+        .answer-card { margin-top: 15px; background: #f9f9f9; padding: 15px; border-radius: 10px; text-align: center; border: 2px solid #eee; }
+        .ans-word { font-size: 2.5rem; font-weight: bold; color:#e74c3c; font-family: serif; letter-spacing: 5px; }
+        .srs-badge { font-size: 0.8rem; background: #eee; padding: 2px 8px; border-radius: 4px; color: #666; margin-top: 5px; display: inline-block;}
+
         /* Controls */
         .controls { display: flex; justify-content: center; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
-        .btn { font-size: 1rem; padding: 12px 24px; border: none; border-radius: 50px; cursor: pointer; color: white; min-width: 110px; box-shadow: 0 3px 0 rgba(0,0,0,0.1); font-weight: bold; transition: all 0.2s;}
+        .btn { font-size: 1rem; padding: 12px 24px; border: none; border-radius: 50px; cursor: pointer; color: white; min-width: 110px; box-shadow: 0 3px 0 rgba(0,0,0,0.1); font-weight: bold; transition: all 0.2s; }
         .btn:active { transform: translateY(2px); box-shadow: none; }
         .btn-blue { background-color: #3498db; }
         .btn-green { background-color: #2ecc71; }
         .btn-red { background-color: #e74c3c; }
         .btn-gray { background-color: #95a5a6; }
         .btn-yellow { background-color: #f1c40f; color: #333; }
-        .btn-outline { background: transparent; border: 2px solid #3498db; color: #3498db; box-shadow: none; }
-        
-        .link-btn {
-            display: block; width: 100%; padding: 12px; margin-bottom: 10px;
-            background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px;
-            color: #333; text-decoration: none; font-size: 0.95rem; text-align: center;
-            transition: background 0.2s;
-        }
-        .link-btn:hover { background: #e2e6ea; }
+        .btn-small { padding: 6px 12px; font-size: 0.85rem; min-width: auto; }
 
-        /* --- Admin Dashboard UI --- */
-        #admin-view { display: none; padding: 20px; text-align: left; background: #fff; height: 100%; overflow-y: auto; padding-bottom: 50px; }
+        /* Admin View */
+        #admin-view { display: none; padding: 20px; text-align: left; background: #fff; flex: 1; overflow-y: auto; padding-bottom: 60px; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        
+        .nav-tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { background: #f1f1f1; border: none; padding: 8px 12px; font-weight: bold; color: #666; cursor: pointer; border-radius: 6px; white-space: nowrap; }
+        .tab-btn.active { background: #3498db; color: white; }
+
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color:#555; }
         .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        .kanji-list { list-style: none; padding: 0; margin-top: 20px; }
-        .kanji-item { background: #f9f9f9; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .kanji-badge { background: #3498db; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; margin-right: 10px; font-size: 1.2rem; }
-        .delete-btn { color: #e74c3c; background: none; border: none; cursor: pointer; font-size: 1.2rem; padding: 0 10px; }
         
+        /* Stats Table */
+        table.stats-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
+        table.stats-table th, table.stats-table td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+        table.stats-table th { background: #f9f9f9; color: #555; position: sticky; top: 0; }
+
         /* Manual Input specific */
-        .manual-word-block { background: white; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #ddd; }
-        .manual-word-label { font-weight: bold; color: #007bff; margin-bottom: 5px; font-size: 0.9rem; }
+        .manual-word-block { background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #eee; }
         
+        /* Footer Links & Watermark */
+        .resource-links { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #eee; text-align: center; }
+        .link-btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; color: #333; text-decoration: none; font-size: 0.95rem; transition: background 0.2s; box-sizing: border-box;}
+        .link-btn:hover { background: #e2e6ea; }
+        .watermark { margin-top: 30px; font-size: 0.8rem; color: #aaa; text-align: center; padding-bottom: 20px; }
+
         /* Utilities */
         .hidden { display: none !important; }
-        .tag { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; }
-        
-        /* Footer Links Section */
-        .resource-links { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #eee; }
-        .resource-links h4 { margin: 0 0 10px 0; color: #555; font-size: 1rem; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; color: white; }
+        .bg-green { background: #27ae60; } .bg-orange { background: #e67e22; } .bg-red { background: #e74c3c; } .bg-blue { background: #3498db; }
+        textarea.bulk-input { width: 100%; height: 120px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>🖐️ 台媽的漢字手寫板</h1>
-        <button class="settings-btn" onclick="toggleAdmin()">⚙️ 設定</button>
+        <h1 onclick="location.reload()" style="cursor:pointer;">🖐️ 台媽的漢字手寫板</h1>
+        <button class="settings-btn" onclick="toggleAdmin()">⚙️</button>
     </header>
 
-    <!-- === STUDENT VIEW === -->
+    <!-- === QUIZ VIEW (STUDENT) === -->
     <div id="quiz-view">
-        <!-- Start Screen -->
         <div id="start-screen">
-            <div style="margin: 40px 20px; text-align: left; background: #e8f4fd; padding: 20px; border-radius: 10px;">
-                <h3 style="margin-top:0;">準備好開始了嗎？</h3>
-                <p>目前題庫共有 <strong id="total-count">0</strong> 個漢字。</p>
+            <div class="welcome-card">
+                <h3 style="margin-top:0; color:#2c3e50;">準備好開始了嗎？</h3>
                 <p>1. 聽語音，看提示。</p>
-                <p>2. 在格子裡寫出正確的熟語。</p>
-                <p>3. 寫完按「看答案」，對照下方的正確字。</p>
+                <p>2. 在虛線格子裡寫出正確的熟語。</p>
+                <p>3. 寫完按「看答案」，自己改考卷。</p>
+                <hr style="border:0; border-top:1px solid #ddd; margin:15px 0;">
+                <p style="font-size:0.9rem; color:#666;">
+                    目前題庫：<strong id="total-count">0</strong> 字<br>
+                    今日待複習：<strong id="start-due-count" style="color:#e74c3c;">0</strong> 字 (含新字)
+                </p>
             </div>
-            <button class="btn btn-blue" style="width: 80%;" onclick="startQuiz()">開始練習 (スタート)</button>
+            
+            <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <button class="btn btn-blue" style="width: 80%;" onclick="startQuiz('due')">🚀 開始今日練習 (新字優先)</button>
+                <button class="btn btn-gray" style="width: 80%; background:#95a5a6;" onclick="startQuiz('all')">全題庫練習 (無腦練)</button>
+            </div>
         </div>
 
-        <!-- Quiz Interface -->
         <div id="quiz-interface" class="hidden">
-            <div class="progress-text">第 <span id="current-num">1</span> / <span id="total-q"></span> 題</div>
+            <div class="progress-text">進度：<span id="current-num">1</span> / <span id="total-q"></span> 題</div>
             
             <div class="question-box">
-                <button class="btn btn-yellow" style="padding: 5px 15px; font-size: 0.9rem; margin-bottom:5px;" onclick="speakQuestion()">🔊 播放聲音</button>
+                <button class="btn btn-yellow btn-small" style="margin-bottom:5px;" onclick="speakQuestion()">🔊 播放聲音</button>
                 <div class="question-text" id="q-kana"></div>
                 <div class="hint-text" id="q-hint"></div>
             </div>
 
-            <!-- Handwriting Canvas -->
             <div class="canvas-container" id="canvas-wrapper">
                 <div class="grid-lines"></div>
                 <canvas id="drawing-board"></canvas>
             </div>
 
-            <!-- Phase 1 Controls -->
             <div id="draw-controls" class="controls">
                 <button class="btn btn-gray" onclick="clearCanvas()">重寫</button>
                 <button class="btn btn-blue" onclick="showAnswer()">看答案</button>
             </div>
 
-            <!-- Phase 2 Controls -->
             <div id="judge-controls" class="controls hidden">
-                <button class="btn btn-green" onclick="recordResult(true)">⭕ 寫對了</button>
-                <button class="btn btn-red" onclick="recordResult(false)">❌ 寫錯了</button>
+                <button class="btn btn-green" onclick="recordResult(5)">⭕ 寫對了</button>
+                <button class="btn btn-red" onclick="recordResult(0)">❌ 寫錯了</button>
             </div>
             
-            <!-- Details -->
-            <div id="answer-details" style="margin-top: 15px; display: none; background: #f9f9f9; padding: 15px; border-radius: 10px; text-align: left; border: 2px solid #eee;">
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <span style="font-size: 3.5rem; font-weight: bold; color:#e74c3c; font-family: serif; letter-spacing: 5px;" id="ans-word"></span>
-                </div>
-                <div style="color: #555; font-size: 1rem; text-align: center;" id="ans-info"></div>
+            <div id="answer-details" class="answer-card hidden">
+                <div class="ans-word" id="ans-word"></div>
+                <div style="color: #555; margin-top:5px;" id="ans-info"></div>
+                <div class="srs-badge" id="srs-info"></div>
             </div>
         </div>
 
-        <!-- Result Screen -->
         <div id="result-screen" class="hidden">
-            <h2>練習結束！</h2>
-            <div style="font-size: 2.5rem; color: #3498db; margin: 15px 0; font-weight:bold;" id="score-display"></div>
-            
-            <div style="text-align: left; margin-top: 20px;">
-                <p style="background:#eee; padding:8px; border-radius:5px; font-weight:bold;">👇 需要加強的字 (請抄寫在筆記本上)</p>
-                <div id="wrong-list"></div>
-            </div>
-            <button class="btn btn-blue" style="margin-top: 30px;" onclick="location.reload()">再考一次</button>
+            <h2 style="color:#2c3e50; margin-top:30px;">練習結束！</h2>
+            <div style="font-size: 3.5rem; color:#3498db; margin: 15px 0; font-weight:bold;" id="score-display"></div>
+            <p style="color:#666;">錯題已自動排入「明日複習」清單。</p>
+            <button class="btn btn-blue" style="margin-top: 20px;" onclick="location.reload()">回到首頁</button>
+        </div>
+
+        <div id="footer-area" style="margin-top:auto;">
+             <div class="watermark">2025 台媽日爸樂共讀 │ twmamareads All Rights Reserved</div>
         </div>
     </div>
 
-    <!-- === ADMIN VIEW (MANUAL) === -->
+    <!-- === ADMIN VIEW (PARENT) === -->
     <div id="admin-view">
         <div class="admin-header">
             <h2 style="margin:0;">⚙️ 家長管理後台</h2>
-            <button class="btn btn-gray" style="min-width:auto; padding: 5px 15px;" onclick="toggleAdmin()">關閉</button>
+            <button class="btn btn-gray btn-small" onclick="toggleAdmin()">關閉</button>
         </div>
 
-        <!-- Manual Add Kanji Section -->
-        <div class="form-group" style="background: #eef; padding: 15px; border-radius: 8px; border:1px solid #ddd;">
-            <h3 style="margin-top:0; color:#007bff; font-size:1.1rem;">➕ 新增/編輯 漢字 (手動輸入)</h3>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('tab-stats')">📊 數據中心</button>
+            <button class="tab-btn" onclick="switchTab('tab-manual')">✍️ 手動新增</button>
+            <button class="tab-btn" onclick="switchTab('tab-import')">📥 批量匯入</button>
+            <button class="tab-btn" onclick="switchTab('tab-settings')">⚙️ 設定與進度</button>
+        </div>
+
+        <!-- TAB: Stats -->
+        <div id="tab-stats" class="tab-content">
+            <div style="background:#f9fff9; border:1px solid #d4edda; padding:15px; border-radius:8px; margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:bold; color:#155724;">學習數據匯出</span>
+                    <button class="btn btn-green btn-small" onclick="exportToCSV()">📥 下載 CSV</button>
+                </div>
+                <p style="font-size:0.85rem; color:#666; margin:5px 0 0 0;">可將檔案丟給 AI 分析孩子弱點。</p>
+            </div>
             
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-bottom:15px;">
-                <div>
-                    <label>漢字</label>
-                    <input type="text" id="manual-char" class="form-control" placeholder="例：愛">
-                </div>
-                <div>
-                    <label>音讀 (片假)</label>
-                    <input type="text" id="manual-on" class="form-control" placeholder="例：アイ">
-                </div>
-                <div>
-                    <label>訓讀 (平假)</label>
-                    <input type="text" id="manual-kun" class="form-control" placeholder="例：いと">
-                </div>
-            </div>
+            <h3 style="font-size:1rem; margin-bottom:10px;">學習概況 (總筆數: <span id="stats-total-count">0</span>)</h3>
+            <table class="stats-table">
+                <thead><tr><th>漢字</th><th>練習</th><th>正確率</th><th>狀態/下次</th></tr></thead>
+                <tbody id="stats-list"></tbody>
+            </table>
+        </div>
 
-            <label style="margin-bottom:10px; display:block;">👇 請輸入 1~3 個常用熟語</label>
+        <!-- TAB: Manual Add -->
+        <div id="tab-manual" class="tab-content hidden">
+            <div class="form-group" style="background: #eef; padding: 15px; border-radius: 8px; border:1px solid #ddd;">
+                <h3 style="margin-top:0; color:#007bff; font-size:1rem;">單字新增</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-bottom:10px;">
+                    <input type="text" id="manual-char" class="form-control" placeholder="漢字 (例:愛)">
+                    <input type="text" id="manual-on" class="form-control" placeholder="音讀">
+                    <input type="text" id="manual-kun" class="form-control" placeholder="訓讀">
+                </div>
+                <label style="margin-bottom:5px; display:block; font-size:0.9rem;">輸入 1~3 組熟語：</label>
+                <div id="word-inputs">
+                    <div class="manual-word-block">
+                        <input type="text" id="w1-w" class="form-control" style="margin-bottom:5px;" placeholder="熟語1 (例:愛情)">
+                        <input type="text" id="w1-k" class="form-control" style="margin-bottom:5px;" placeholder="讀音1 (例:あいじょう)">
+                        <input type="text" id="w1-h" class="form-control" placeholder="提示1">
+                    </div>
+                    <div class="manual-word-block">
+                        <input type="text" id="w2-w" class="form-control" style="margin-bottom:5px;" placeholder="熟語2">
+                        <input type="text" id="w2-k" class="form-control" style="margin-bottom:5px;" placeholder="讀音2">
+                    </div>
+                    <div class="manual-word-block">
+                        <input type="text" id="w3-w" class="form-control" style="margin-bottom:5px;" placeholder="熟語3">
+                        <input type="text" id="w3-k" class="form-control" style="margin-bottom:5px;" placeholder="讀音3">
+                    </div>
+                </div>
+                <button class="btn btn-green" style="width:100%;" onclick="addKanjiManual()">確認新增</button>
+            </div>
             
-            <div id="word-inputs">
-                <!-- Word 1 -->
-                <div class="manual-word-block">
-                    <div class="manual-word-label">詞彙 1</div>
-                    <input type="text" id="w1-w" class="form-control" style="margin-bottom:5px;" placeholder="熟語 (例: 愛情)">
-                    <input type="text" id="w1-k" class="form-control" style="margin-bottom:5px;" placeholder="讀音 (例: あいじょう)">
-                    <input type="text" id="w1-h" class="form-control" placeholder="提示 (例: 深く愛する心)">
+             <div style="margin-top: 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>題庫列表</h3>
+                    <button class="btn btn-red btn-small" onclick="resetAllData()">⚠️ 全部重置</button>
                 </div>
-                <!-- Word 2 -->
-                <div class="manual-word-block">
-                     <div class="manual-word-label">詞彙 2 (選填)</div>
-                    <input type="text" id="w2-w" class="form-control" style="margin-bottom:5px;" placeholder="熟語">
-                    <input type="text" id="w2-k" class="form-control" style="margin-bottom:5px;" placeholder="讀音">
-                    <input type="text" id="w2-h" class="form-control" placeholder="提示">
-                </div>
-                <!-- Word 3 -->
-                <div class="manual-word-block">
-                     <div class="manual-word-label">詞彙 3 (選填)</div>
-                    <input type="text" id="w3-w" class="form-control" style="margin-bottom:5px;" placeholder="熟語">
-                    <input type="text" id="w3-k" class="form-control" style="margin-bottom:5px;" placeholder="讀音">
-                    <input type="text" id="w3-h" class="form-control" placeholder="提示">
-                </div>
+                <ul id="manage-list" style="list-style:none; padding:0;"></ul>
             </div>
-
-            <button class="btn btn-green" style="width:100%; margin-top:10px;" onclick="addKanjiManual()">新增至題庫</button>
         </div>
 
-        <!-- List Section -->
-        <div style="margin-top: 20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>目前題庫 (<span id="db-count">0</span>)</h3>
-                <button class="btn btn-outline" style="font-size:0.8rem; min-width:auto; padding:5px 10px;" onclick="resetDefaultData()">重置回預設56字</button>
+        <!-- TAB: File Import -->
+        <div id="tab-import" class="tab-content hidden">
+            <div style="border:1px solid #eee; padding:15px; border-radius:8px;">
+                <p style="margin-top:0; font-size:0.9rem;">
+                    1. 選擇包含 202 個單字的 CSV 檔案：<br>
+                    格式：<code>漢字 | 音讀 | 訓讀 | 熟語1 | 讀音1 | 提示1 ...</code>
+                </p>
+                <input type="file" id="file-input" accept=".csv" class="form-control" style="margin-bottom:10px;">
+                
+                <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                    <a href="https://docs.google.com/spreadsheets/d/1ZYU0fN19K71kXJWl29lJUZqs5sl6CPhIWCoKBC8YQW4/edit?usp=sharing" target="_blank" style="color:#007bff; text-decoration:none; font-size:0.9rem; display:flex; align-items:center;">📋 查看範本表格</a>
+                    <button class="btn btn-blue" onclick="processFileImport()">開始匯入</button>
+                </div>
             </div>
-            <ul class="kanji-list" id="admin-list">
-                <!-- Items injected here -->
-            </ul>
         </div>
 
-        <!-- Resources Links Section -->
+        <!-- TAB: Settings -->
+        <div id="tab-settings" class="tab-content hidden">
+             <div class="welcome-card" style="background: #e8f4fd;">
+                <h3 style="margin-top:0;">📅 今日學習計畫</h3>
+                <p>系統計算今日應複習： <strong id="admin-due-count" style="color:#e74c3c; font-size:1.4rem;">0</strong> 個字</p>
+                <p style="font-size:0.9rem; color:#0056b3;">(包含未練習過的新字 + 到期需複習的舊字)</p>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:15px;">
+                    <label>每日練習上限：</label>
+                    <input type="number" id="daily-limit" value="20" style="width:60px; padding:8px; border-radius:6px; border:1px solid #ccc; font-size:1rem; text-align:center;">
+                    <button class="btn btn-blue btn-small" onclick="saveLimit()">儲存設定</button>
+                </div>
+                <p style="font-size:0.85rem; color:#666;">* 設定為 0 代表不限制。</p>
+            </div>
+        </div>
+
+        <!-- Resource Links -->
         <div class="resource-links">
             <h4>🔗 台媽資源連結</h4>
             <a href="https://twmama.notion.site/supportme?source=copy_link" target="_blank" class="link-btn">
@@ -240,196 +267,321 @@
             <a href="https://twmama.notion.site/resources-hub?source=copy_link" target="_blank" class="link-btn">
                 📚 更多免費資源：台媽日爸樂共讀
             </a>
+            <div class="watermark">2025 台媽日爸樂共讀 │ twmamareads All Rights Reserved</div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- Initial Data (The 56 Original Kanji) ---
+    const DB_KEY = 'kanji_app_v11_db'; // New key
+    let kanjiData = [];
+    
+    // Default Data: Sample only. Real data comes from Import.
     const defaultData = [
         { char: "令", on: "レイ", kun: "-", words: [{w:"命令", k:"めいれい", h:"上の人が言いつける"}, {w:"号令", k:"ごうれい", h:"全体にかける言葉"}, {w:"令和", k:"れいわ", h:"今の年号"}] },
-        { char: "位", on: "イ", kun: "くらい", words: [{w:"一位", k:"いちい", h:"競争で一番になる"}, {w:"地位", k:"ちい", h:"社会的な立場"}, {w:"各位", k:"かくい", h:"皆様"}] },
-        { char: "置", on: "チ", kun: "お(く)", words: [{w:"位置", k:"いち", h:"場所"}, {w:"物置", k:"ものおき", h:"道具を入れる倉庫"}, {w:"置く", k:"おく", h:"机の上に本を～"}] },
-        { char: "漁", on: "ギョ", kun: "-", words: [{w:"漁業", k:"ぎょぎょう", h:"魚をとる産業"}, {w:"漁師", k:"りょうし", h:"魚をとる仕事の人"}, {w:"大漁", k:"たいりょう", h:"魚がたくさんとれる"}] },
-        { char: "浴", on: "ヨク", kun: "あ(びる)", words: [{w:"海水浴", k:"かいすいよく", h:"夏に海で泳ぐ"}, {w:"日光浴", k:"にっこうよく", h:"太陽の光にあたる"}, {w:"浴びる", k:"あびる", h:"シャワーを～"}] },
-        { char: "欠", on: "ケツ", kun: "か(ける)", words: [{w:"欠席", k:"けっせき", h:"学校を休む"}, {w:"欠点", k:"けってん", h:"悪いところ"}, {w:"不可欠", k:"ふかけつ", h:"絶対に必要なこと"}] },
-        { char: "卒", on: "ソツ", kun: "-", words: [{w:"卒業", k:"そつぎょう", h:"学校を終える"}, {w:"新卒", k:"しんそつ", h:"学校を出たばかりの人"}, {w:"何卒", k:"なにとぞ", h:"お願いします"}] },
-        { char: "単", on: "タン", kun: "-", words: [{w:"簡単", k:"かんたん", h:"むずかしくない"}, {w:"単語", k:"たんご", h:"言葉のひとまとまり"}, {w:"単位", k:"たんい", h:"メートルやグラムなど"}] },
-        { char: "結", on: "ケツ", kun: "むす(ぶ)", words: [{w:"結婚", k:"けっこん", h:"夫婦になる"}, {w:"結果", k:"けっか", h:"物事の終わり"}, {w:"結ぶ", k:"むすぶ", h:"ひもを～"}] },
-        { char: "果", on: "カ", kun: "は(たす)", words: [{w:"果実", k:"かじつ", h:"木の実"}, {w:"成果", k:"せいか", h:"よい出来栄え"}, {w:"果たす", k:"はたす", h:"約束を守り切る"}] },
-        { char: "径", on: "ケイ", kun: "-", words: [{w:"直径", k:"ちょっけい", h:"円の中心を通る線"}, {w:"半径", k:"はんけい", h:"中心から円の端まで"}, {w:"小径", k:"こみち", h:"細い道"}] },
-        { char: "副", on: "フク", kun: "-", words: [{w:"副社長", k:"ふくしゃちょう", h:"社長の次の人"}, {w:"副作用", k:"ふくさよう", h:"薬の別の働き"}, {w:"副賞", k:"ふくしょう", h:"おまけの賞品"}] },
-        { char: "臣", on: "シン", kun: "-", words: [{w:"大臣", k:"だいじん", h:"内閣のメンバー"}, {w:"臣下", k:"しんか", h:"家来"}, {w:"臣民", k:"しんみん", h:"昔の言葉で国民"}] },
-        { char: "街", on: "ガイ", kun: "まち", words: [{w:"商店街", k:"しょうてんがい", h:"店が並ぶ通り"}, {w:"市街地", k:"しがいち", h:"家や店が多い所"}, {w:"街角", k:"まちかど", h:"道の曲がり角"}] },
-        { char: "灯", on: "トウ", kun: "-", words: [{w:"灯台", k:"とうだい", h:"海を照らす塔"}, {w:"電灯", k:"でんとう", h:"電気の明かり"}, {w:"街灯", k:"がいとう", h:"道路にある明かり"}] },
-        { char: "英", on: "エイ", kun: "-", words: [{w:"英語", k:"えいご", h:"外国の言葉"}, {w:"英国", k:"えいこく", h:"イギリスのこと"}, {w:"英雄", k:"えいゆう", h:"ヒーロー"}] },
-        { char: "参", on: "サン", kun: "まい(る)", words: [{w:"参加", k:"さんか", h:"仲間に入ること"}, {w:"参考", k:"さんこう", h:"考えの助けにする"}, {w:"参る", k:"まいる", h:"神社へ行く"}] },
-        { char: "唱", on: "ショウ", kun: "とな(える)", words: [{w:"合唱", k:"がっしょう", h:"みんなで歌う"}, {w:"独唱", k:"どくしょう", h:"一人で歌う"}, {w:"唱える", k:"となえる", h:"呪文を口に出す"}] },
-        { char: "塩", on: "エン", kun: "しお", words: [{w:"食塩", k:"しょくえん", h:"料理に使う白い粉"}, {w:"塩分", k:"えんぶん", h:"しょっぱい成分"}, {w:"塩", k:"しお", h:"味付けに使う"}] },
-        { char: "治", on: "ジ、チ", kun: "おさ(める)", words: [{w:"政治", k:"せいじ", h:"国を動かすこと"}, {w:"治療", k:"ちりょう", h:"病気をなおす"}, {w:"治める", k:"おさめる", h:"国を～"}] },
-        { char: "刷", on: "サツ", kun: "す(る)", words: [{w:"印刷", k:"いんさつ", h:"紙にプリントする"}, {w:"刷新", k:"さっしん", h:"全く新しくすること"}, {w:"刷る", k:"する", h:"ポスターを～"}] },
-        { char: "変", on: "ヘン", kun: "か(わる)", words: [{w:"変化", k:"へんか", h:"ようすの移り変わり"}, {w:"大変", k:"たいへん", h:"苦労する"}, {w:"変わる", k:"かわる", h:"信号の色が～"}] },
-        { char: "末", on: "マツ", kun: "すえ", words: [{w:"年末", k:"ねんまつ", h:"年の終わり"}, {w:"結末", k:"けつまつ", h:"物語の最後"}, {w:"末っ子", k:"すえっこ", h:"一番下の子"}] },
-        { char: "種", on: "シュ", kun: "たね", words: [{w:"種類", k:"しゅるい", h:"グループ分け"}, {w:"人種", k:"じんしゅ", h:"人の区分"}, {w:"種まき", k:"たねまき", h:"畑にまくこと"}] },
-        { char: "続", on: "ゾク", kun: "つづ(く)", words: [{w:"連続", k:"れんぞく", h:"途切れないこと"}, {w:"接続", k:"せつぞく", h:"つなぐこと"}, {w:"続く", k:"つづく", h:"道が～"}] },
-        { char: "折", on: "セツ", kun: "お(る)", words: [{w:"骨折", k:"こっせつ", h:"骨が折れる"}, {w:"右折", k:"うせつ", h:"右に曲がる"}, {w:"折り紙", k:"おりがみ", h:"鶴などを作る遊び"}] },
-        { char: "積", on: "セキ", kun: "つ(む)", words: [{w:"面積", k:"めんせき", h:"広さ"}, {w:"積雪", k:"せきせつ", h:"雪がふりつもる"}, {w:"積み木", k:"つみき", h:"木のおもちゃ"}] },
-        { char: "松", on: "ショウ", kun: "まつ", words: [{w:"松竹梅", k:"しょうちくばい", h:"お祝いの３つの木"}, {w:"松林", k:"まつばやし", h:"海岸などにある林"}, {w:"門松", k:"かどまつ", h:"正月に飾るもの"}] },
-        { char: "不", on: "フ", kun: "-", words: [{w:"不足", k:"ふそく", h:"足りないこと"}, {w:"不便", k:"ふべん", h:"便利じゃない"}, {w:"不思議", k:"ふしぎ", h:"理由がわからない"}] },
-        { char: "議", on: "ギ", kun: "-", words: [{w:"会議", k:"かいぎ", h:"集まって話し合う"}, {w:"議員", k:"ぎいん", h:"選挙で選ばれた人"}, {w:"議題", k:"ぎだい", h:"話し合うテーマ"}] },
-        { char: "差", on: "サ", kun: "さ(す)", words: [{w:"交差点", k:"こうさてん", h:"道が交わるところ"}, {w:"時差", k:"じさ", h:"時間のずれ"}, {w:"日差し", k:"ひざし", h:"太陽の光"}] },
-        { char: "念", on: "ネン", kun: "-", words: [{w:"記念", k:"きねん", h:"思い出に残す"}, {w:"残念", k:"ざんねん", h:"くやしい気持ち"}, {w:"念願", k:"ねんがん", h:"ずっと望んでいたこと"}] },
-        { char: "固", on: "コ", kun: "かた(まる)", words: [{w:"固定", k:"こてい", h:"動かないようにする"}, {w:"頑固", k:"がんこ", h:"意地っ張りなこと"}, {w:"固まる", k:"かたまる", h:"ゼリーなどが～"}] },
-        { char: "便", on: "ベン", kun: "たよ(り)", words: [{w:"便利", k:"べんり", h:"役に立つこと"}, {w:"郵便", k:"ゆうびん", h:"手紙を送る仕組み"}, {w:"便り", k:"たより", h:"手紙や知らせ"}] },
-        { char: "博", on: "ハク", kun: "-", words: [{w:"博士", k:"はかせ", h:"物知りな人"}, {w:"博物館", k:"はくぶつかん", h:"古い物を展示する場所"}, {w:"博愛", k:"はくあい", h:"広く平等に愛する"}] },
-        { char: "浅", on: "セン", kun: "あさ(い)", words: [{w:"浅海", k:"せんかい", h:"深くない海"}, {w:"遠浅", k:"とおあさ", h:"遠くまで深くない"}, {w:"浅い", k:"あさい", h:"プールが～"}] },
-        { char: "倉", on: "ソウ", kun: "くら", words: [{w:"倉庫", k:"そうこ", h:"荷物をしまっておく建物"}, {w:"穀倉", k:"こくそう", h:"お米などを入れる"}, {w:"倉", k:"くら", h:"昔の保管庫"}] },
-        { char: "札", on: "サツ", kun: "ふだ", words: [{w:"名札", k:"なふだ", h:"名前を書いたカード"}, {w:"千円札", k:"せんえんさつ", h:"紙のお金"}, {w:"改札口", k:"かいさつぐち", h:"駅で切符を通す所"}] },
-        { char: "孫", on: "ソン", kun: "まご", words: [{w:"子孫", k:"しそん", h:"代々の子供たち"}, {w:"孫娘", k:"まごむすめ", h:"女の子のまご"}, {w:"孫", k:"まご", h:"子供の子供"}] },
-        { char: "功", on: "コウ", kun: "-", words: [{w:"成功", k:"せいこう", h:"うまくいくこと"}, {w:"功績", k:"こうせき", h:"立派な働き"}, {w:"功労", k:"こうろう", h:"苦労して尽くしたこと"}] },
-        { char: "加", on: "カ", kun: "くわ(える)", words: [{w:"参加", k:"さんか", h:"行事に加わる"}, {w:"追加", k:"ついか", h:"後から足すこと"}, {w:"加える", k:"くわえる", h:"塩を～"}] },
-        { char: "牧", on: "ボク", kun: "まき", words: [{w:"牧場", k:"ぼくじょう", h:"牛や馬がいる所"}, {w:"遊牧", k:"ゆうぼく", h:"移動しながら家畜を飼う"}, {w:"牧場", k:"まきば", h:"牛がいる広場(訓読み)"}] },
-        { char: "借", on: "シャク", kun: "か(りる)", words: [{w:"借金", k:"しゃっきん", h:"お金を借りること"}, {w:"借用", k:"しゃくよう", h:"借りて使うこと"}, {w:"借りる", k:"かりる", h:"図書館で本を～"}] },
-        { char: "挙", on: "キョ", kun: "あ(げる)", words: [{w:"選挙", k:"せんきょ", h:"代表を投票で選ぶ"}, {w:"挙手", k:"きょしゅ", h:"手をあげること"}, {w:"挙げる", k:"あげる", h:"手を～"}] },
-        { char: "協", on: "キョウ", kun: "-", words: [{w:"協力", k:"きょうりょく", h:"力を合わせる"}, {w:"協会", k:"きょうかい", h:"ある目的のグループ"}, {w:"協定", k:"きょうてい", h:"国家間の取り決め"}] },
-        { char: "極", on: "キョク", kun: "きわ(める)", words: [{w:"北極", k:"ほっきょく", h:"地球の一番北"}, {w:"積極的", k:"せっきょくてき", h:"進んでやること"}, {w:"極める", k:"きわめる", h:"頂点に達する"}] },
-        { char: "求", on: "キュウ", kun: "もと(める)", words: [{w:"要求", k:"ようきゅう", h:"必要だと言うこと"}, {w:"求人", k:"きゅうじん", h:"働き手をさがすこと"}, {w:"求める", k:"もとめる", h:"平和を～"}] },
-        { char: "未", on: "ミ", kun: "-", words: [{w:"未来", k:"みらい", h:"これから来ること"}, {w:"未満", k:"みまん", h:"ある数より小さい"}, {w:"未定", k:"みてい", h:"まだ決まっていない"}] },
-        { char: "芸", on: "ゲイ", kun: "-", words: [{w:"芸術", k:"げいじゅつ", h:"音楽や美術など"}, {w:"芸能", k:"げいのう", h:"テレビに出る人など"}, {w:"園芸", k:"えんげい", h:"花や草木を育てる"}] },
-        { char: "各", on: "カク", kun: "おのおの", words: [{w:"各自", k:"かくじ", h:"ひとりひとり"}, {w:"各国", k:"かっこく", h:"それぞれの国"}, {w:"各駅", k:"かくえき", h:"すべての駅"}] },
-        { char: "料", on: "リョウ", kun: "-", words: [{w:"料理", k:"りょうり", h:"食事を作ること"}, {w:"料金", k:"りょうきん", h:"支払うお金"}, {w:"材料", k:"ざいりょう", h:"作るための原料"}] },
-        { char: "仲", on: "-", kun: "なか", words: [{w:"仲間", k:"なかま", h:"一緒に何かする人"}, {w:"仲良し", k:"なかよし", h:"関係が良いこと"}, {w:"仲直り", k:"なかなおり", h:"けんかの後に元に戻る"}] },
-        { char: "労", on: "ロウ", kun: "-", words: [{w:"労働", k:"ろうどう", h:"働いて賃金をもらう"}, {w:"苦労", k:"くろう", h:"精神的・肉体的に大変"}, {w:"疲労", k:"ひろう", h:"とても疲れること"}] },
-        { char: "焼", on: "ショウ", kun: "や(く)", words: [{w:"夕焼け", k:"ゆうやけ", h:"夕方の赤い空"}, {w:"焼肉", k:"やきにく", h:"肉を火にかける料理"}, {w:"燃焼", k:"ねんしょう", h:"燃えること"}] },
-        { char: "冷", on: "レイ", kun: "ひ(やす)", words: [{w:"冷蔵庫", k:"れいぞうこ", h:"食品を保存する家電"}, {w:"冷静", k:"れいせい", h:"感情的にならない"}, {w:"冷やす", k:"ひやす", h:"氷などで～"}] },
-        { char: "照", on: "ショウ", kun: "て(らす)", words: [{w:"照明", k:"しょうめい", h:"部屋のライト"}, {w:"対照", k:"たいしょう", h:"二つを比べること"}, {w:"照らす", k:"てらす", h:"光を当てる"}] }
+        { char: "位", on: "イ", kun: "くらい", words: [{w:"一位", k:"いちい", h:"競争で一番になる"}, {w:"地位", k:"ちい", h:"社会的な立場"}] }
     ];
 
-    // --- State Management ---
-    let kanjiData = [];
-    let currentQuestions = [];
-    let currentIndex = 0;
-    let wrongAnswers = [];
-    
-    // Canvas Vars
-    const wrapper = document.getElementById('canvas-wrapper');
-    const canvas = document.getElementById('drawing-board');
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
+    function createSRSNode() {
+        return {
+            interval: 0,      
+            repetition: 0,    
+            ef: 2.5,          
+            dueDate: Date.now(), 
+            stats: { total: 0, correct: 0 }
+        };
+    }
 
-    // --- Persistence Logic ---
+    function calculateSM2(item, quality) {
+        let srs = item.srs || createSRSNode();
+        srs.stats.total++;
+        if (quality >= 3) srs.stats.correct++;
+
+        if (quality >= 3) {
+            if (srs.repetition === 0) srs.interval = 1;
+            else if (srs.repetition === 1) srs.interval = 3;
+            else srs.interval = Math.round(srs.interval * srs.ef);
+            srs.repetition++;
+            srs.ef = srs.ef + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+            if (srs.ef < 1.3) srs.ef = 1.3;
+        } else {
+            srs.repetition = 0;
+            srs.interval = 1; 
+        }
+
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + srs.interval);
+        srs.dueDate = nextDate.getTime();
+        return srs;
+    }
+
+    // --- Persistence ---
     function loadData() {
-        const stored = localStorage.getItem('myKanjiData');
+        const stored = localStorage.getItem(DB_KEY);
         if (stored) {
             kanjiData = JSON.parse(stored);
+            kanjiData.forEach(k => {
+                if(!k.srs) k.srs = createSRSNode();
+                if(!k.srs.stats) k.srs.stats = { total: 0, correct: 0 };
+            });
         } else {
             kanjiData = JSON.parse(JSON.stringify(defaultData));
+            kanjiData.forEach(k => k.srs = createSRSNode());
+            saveData();
         }
-        updateAdminList();
-        document.getElementById("total-count").innerText = kanjiData.length;
-        document.getElementById("db-count").innerText = kanjiData.length;
+        updateDashboard();
     }
 
     function saveData() {
-        localStorage.setItem('myKanjiData', JSON.stringify(kanjiData));
-        updateAdminList();
-        document.getElementById("total-count").innerText = kanjiData.length;
-        document.getElementById("db-count").innerText = kanjiData.length;
-    }
-
-    function resetDefaultData() {
-        if(confirm("確定要重置回預設的 56 個漢字嗎？您新增的字會消失喔。")) {
-            localStorage.removeItem('myKanjiData');
-            loadData();
-        }
+        localStorage.setItem(DB_KEY, JSON.stringify(kanjiData));
+        updateDashboard();
     }
     
-    // --- Admin Dashboard Logic ---
+    function saveLimit() {
+        const limit = document.getElementById('daily-limit').value;
+        localStorage.setItem('daily_limit', limit);
+        alert("設定已儲存！今日學習計畫已更新。");
+        updateDashboard();
+    }
+
+    function resetAllData() {
+        if(confirm("確定要刪除所有紀錄並重置嗎？無法復原！")) {
+            localStorage.removeItem(DB_KEY);
+            location.reload();
+        }
+    }
+
+    // --- Dashboard & Quiz Logic ---
+    let quizQueue = [];
+    let currentQIndex = 0;
+    let quizResults = { correct: 0, total: 0 };
+
+    function updateDashboard() {
+        const now = Date.now();
+        // Count New Items (repetition == 0)
+        const newItemsCount = kanjiData.filter(k => k.srs.repetition === 0).length;
+        // Count Due Items (repetition > 0 AND dueDate <= now)
+        const dueItemsCount = kanjiData.filter(k => k.srs.repetition > 0 && k.srs.dueDate <= now).length;
+        
+        const totalDue = newItemsCount + dueItemsCount;
+        
+        document.getElementById('total-count').innerText = kanjiData.length;
+        document.getElementById('start-due-count').innerText = totalDue;
+        document.getElementById('admin-due-count').innerText = totalDue;
+        
+        const savedLimit = localStorage.getItem('daily_limit');
+        if(savedLimit) document.getElementById('daily-limit').value = savedLimit;
+    }
+
+    function startQuiz(mode) {
+        let queue = [];
+        const now = Date.now();
+        const limit = parseInt(document.getElementById('daily-limit').value) || 9999;
+
+        if (mode === 'due') {
+            // NEW LOGIC: New Kanji (Rep=0) First, then Due Kanji
+            const newItems = kanjiData.filter(k => k.srs.repetition === 0);
+            const dueItems = kanjiData.filter(k => k.srs.repetition > 0 && k.srs.dueDate <= now);
+            
+            // Sort due items by urgency
+            dueItems.sort((a,b) => a.srs.interval - b.srs.interval);
+            
+            // Combine: New items first!
+            queue = [...newItems, ...dueItems];
+        } else {
+            queue = [...kanjiData];
+            queue.sort(() => Math.random() - 0.5);
+        }
+
+        if (queue.length === 0 && mode === 'due') {
+            alert("太棒了！今天沒有需要複習的字。");
+            return;
+        }
+
+        if (queue.length > limit) {
+            queue = queue.slice(0, limit);
+        }
+
+        quizQueue = queue.map(item => {
+            const word = item.words[Math.floor(Math.random() * item.words.length)];
+            return {
+                id: item.char,
+                q_word: word.w,
+                q_kana: word.k,
+                hint: word.h,
+                full_item: item
+            };
+        });
+
+        currentQIndex = 0;
+        quizResults = { correct: 0, total: quizQueue.length };
+        
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('footer-area').classList.add('hidden');
+        document.getElementById('quiz-interface').classList.remove('hidden');
+        document.getElementById('total-q').innerText = quizQueue.length;
+        
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const q = quizQueue[currentQIndex];
+        document.getElementById('current-num').innerText = currentQIndex + 1;
+        document.getElementById('q-kana').innerText = q.q_kana;
+        document.getElementById('q-hint').innerText = "ヒント: " + q.hint;
+        
+        clearCanvas();
+        document.getElementById('draw-controls').classList.remove('hidden');
+        document.getElementById('judge-controls').classList.add('hidden');
+        document.getElementById('answer-details').classList.add('hidden');
+        
+        resizeCanvas();
+    }
+
+    function showAnswer() {
+        const q = quizQueue[currentQIndex];
+        const item = q.full_item;
+        
+        document.getElementById('ans-word').innerText = q.q_word;
+        document.getElementById('ans-info').innerText = `目標: ${item.char} (音: ${item.on} / 訓: ${item.kun})`;
+        
+        const daysCorrect = calculateSM2(JSON.parse(JSON.stringify(item)), 5).interval;
+        document.getElementById('srs-info').innerText = `預測複習: 答對(${daysCorrect}天後) / 答錯(明天)`;
+
+        document.getElementById('answer-details').classList.remove('hidden');
+        document.getElementById('draw-controls').classList.add('hidden');
+        document.getElementById('judge-controls').classList.remove('hidden');
+    }
+
+    function recordResult(quality) {
+        const q = quizQueue[currentQIndex];
+        const realItem = kanjiData.find(k => k.char === q.id);
+        
+        if (realItem) {
+            realItem.srs = calculateSM2(realItem, quality);
+            saveData();
+        }
+
+        if (quality >= 3) quizResults.correct++;
+
+        currentQIndex++;
+        if (currentQIndex < quizQueue.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-interface').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        const percentage = Math.round((quizResults.correct / quizResults.total) * 100);
+        document.getElementById('score-display').innerText = percentage + "%";
+    }
+
+    // --- Admin & Stats ---
     function toggleAdmin() {
         const quizView = document.getElementById('quiz-view');
         const adminView = document.getElementById('admin-view');
-        
         if (quizView.style.display === "none") {
-            quizView.style.display = "block";
+            quizView.style.display = "flex";
             adminView.style.display = "none";
         } else {
             quizView.style.display = "none";
             adminView.style.display = "block";
-            updateAdminList();
+            // Refresh views
+            updateDashboard();
+            renderStats();
+            renderManageList();
         }
     }
 
-    function updateAdminList() {
-        const list = document.getElementById('admin-list');
-        list.innerHTML = "";
-        // Show latest added first
-        const revData = [...kanjiData].reverse();
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById(tabId).classList.remove('hidden');
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        event.target.classList.add('active');
         
-        revData.forEach((item, index) => {
-            const realIndex = kanjiData.length - 1 - index;
-            const li = document.createElement("li");
-            li.className = "kanji-item";
-            li.innerHTML = `
-                <div style="display:flex; align-items:center;">
-                    <span class="kanji-badge">${item.char}</span>
-                    <div style="text-align:left;">
-                        <span class="tag">音: ${item.on}</span>
-                        <span class="tag">訓: ${item.kun}</span><br>
-                        <small style="color:#666;">${item.words.map(w=>w.w).join(", ")}</small>
-                    </div>
-                </div>
-                <button class="delete-btn" onclick="deleteKanji(${realIndex})">🗑️</button>
+        if(tabId === 'tab-stats') renderStats();
+        if(tabId === 'tab-manual') renderManageList();
+    }
+
+    function renderStats() {
+        const tbody = document.getElementById('stats-list');
+        tbody.innerHTML = "";
+        document.getElementById('stats-total-count').innerText = kanjiData.length;
+        
+        // Sort: Accuracy (low to high), then New items last
+        const sorted = [...kanjiData].sort((a,b) => {
+            const accA = a.srs.stats.total ? (a.srs.stats.correct/a.srs.stats.total) : 1;
+            const accB = b.srs.stats.total ? (b.srs.stats.correct/b.srs.stats.total) : 1;
+            return accA - accB;
+        });
+
+        sorted.forEach(k => {
+            const rate = k.srs.stats.total ? Math.round((k.srs.stats.correct / k.srs.stats.total)*100) : 0;
+            const isNew = k.srs.repetition === 0;
+            const nextDate = isNew ? "新字(待練習)" : new Date(k.srs.dueDate).toLocaleDateString();
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${k.char}</strong></td>
+                <td>${k.srs.stats.total}</td>
+                <td><span class="badge ${isNew ? 'bg-blue' : (rate < 60 ? 'bg-red' : (rate < 90 ? 'bg-orange' : 'bg-green'))}">${isNew ? 'New' : rate+'%'}</span></td>
+                <td>${nextDate}</td>
             `;
-            list.appendChild(li);
+            tbody.appendChild(tr);
         });
     }
 
-    function deleteKanji(index) {
-        if(confirm(`確定要刪除「${kanjiData[index].char}」嗎？`)) {
-            kanjiData.splice(index, 1);
-            saveData();
-        }
-    }
+    function exportToCSV() {
+        let csvContent = "\uFEFF"; 
+        csvContent += "漢字,音讀,訓讀,練習次數,正確率(%),下次複習日,間隔(天),熟語範例\n";
+        
+        kanjiData.forEach(k => {
+            const rate = k.srs.stats.total ? ((k.srs.stats.correct / k.srs.stats.total)*100).toFixed(1) : 0;
+            const next = new Date(k.srs.dueDate).toISOString().split('T')[0];
+            const words = k.words.map(w => w.w).join(";");
+            csvContent += `${k.char},${k.on},${k.kun},${k.srs.stats.total},${rate},${next},${k.srs.interval},"${words}"\n`;
+        });
 
-    // --- Manual Kanji Addition ---
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `漢字學習數據_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    }
+    
+    // --- Manual Add Logic ---
     function addKanjiManual() {
         const char = document.getElementById('manual-char').value.trim();
         const on = document.getElementById('manual-on').value.trim() || "-";
         const kun = document.getElementById('manual-kun').value.trim() || "-";
 
-        // Words
         const words = [];
         for(let i=1; i<=3; i++) {
             const w = document.getElementById(`w${i}-w`).value.trim();
             const k = document.getElementById(`w${i}-k`).value.trim();
             const h = document.getElementById(`w${i}-h`).value.trim();
-            if(w && k) {
-                words.push({w, k, h: h || "ヒントなし"});
-            }
+            if(w && k) words.push({w, k, h: h || "ヒントなし"});
         }
 
         if (!char) { alert("請輸入漢字！"); return; }
         if (words.length === 0) { alert("請至少輸入一組熟語！"); return; }
 
-        const newEntry = { char, on, kun, words };
+        const newEntry = { char, on, kun, words, srs: createSRSNode() };
         
-        // Check duplicate
-        const exists = kanjiData.find(k => k.char === char);
-        if(exists) {
-            if(confirm("這個漢字已經存在，要覆蓋嗎？")) {
-                 const idx = kanjiData.findIndex(k => k.char === char);
-                 kanjiData[idx] = newEntry;
-            } else {
-                return;
-            }
+        const idx = kanjiData.findIndex(k => k.char === char);
+        if(idx >= 0) {
+            if(confirm("這個漢字已經存在，要覆蓋嗎？")) kanjiData[idx] = newEntry;
+            else return;
         } else {
             kanjiData.push(newEntry);
         }
 
         saveData();
         alert(`已儲存「${char}」！`);
-        
-        // Clear inputs
+        // Clear Form
         document.getElementById('manual-char').value = "";
         document.getElementById('manual-on').value = "";
         document.getElementById('manual-kun').value = "";
@@ -438,148 +590,129 @@
             document.getElementById(`w${i}-k`).value = "";
             document.getElementById(`w${i}-h`).value = "";
         }
+        renderManageList();
+    }
+    
+    function renderManageList() {
+        const ul = document.getElementById('manage-list');
+        ul.innerHTML = "";
+        // Show newest first
+        [...kanjiData].reverse().forEach((k) => {
+             // Find original index
+            const originalIdx = kanjiData.findIndex(item => item.char === k.char);
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div style="background:#f9f9f9; padding:8px 10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.9rem;"><strong>${k.char}</strong> <span style="color:#666; font-size:0.8rem;">(${k.words.length}詞)</span></span>
+                    <button class="btn btn-red btn-small" onclick="deleteItem(${originalIdx})">🗑️</button>
+                </div>`;
+            ul.appendChild(li);
+        });
+    }
+    function deleteItem(idx) {
+        if(confirm("確定刪除？")) {
+            kanjiData.splice(idx, 1);
+            saveData();
+            renderManageList();
+        }
     }
 
-    // --- Quiz Logic ---
+    // --- File Import Logic (UPDATED) ---
+    function processFileImport() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+        if (!file) {
+            return alert("請選擇一個 .csv 檔案！");
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const raw = e.target.result;
+            const lines = raw.split(/\r\n|\n/);
+            let addedCount = 0;
+
+            lines.forEach(line => {
+                // Regex to split by comma but ignore commas inside quotes
+                const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+                
+                // Clean quotes
+                const cleanParts = parts.map(p => p ? p.trim().replace(/^"|"$/g, '') : '');
+                
+                if (cleanParts.length < 6) return;
+                if (cleanParts[0] === "漢字") return; // Skip header
+
+                const char = cleanParts[0];
+                const on = cleanParts[1] || "-";
+                const kun = cleanParts[2] || "-";
+                
+                let words = [];
+                for (let i = 3; i < cleanParts.length; i += 3) {
+                    if (cleanParts[i] && cleanParts[i+1]) {
+                        words.push({ 
+                            w: cleanParts[i], 
+                            k: cleanParts[i+1], 
+                            h: cleanParts[i+2] || "ヒントなし" 
+                        });
+                    }
+                }
+
+                if (char && words.length > 0) {
+                    const idx = kanjiData.findIndex(k => k.char === char);
+                    const newItem = { char, on, kun, words, srs: createSRSNode() };
+                    if (idx >= 0) {
+                        kanjiData[idx].words = words;
+                        kanjiData[idx].on = on;
+                        kanjiData[idx].kun = kun;
+                    } else {
+                        kanjiData.push(newItem);
+                        addedCount++;
+                    }
+                }
+            });
+
+            saveData(); // Save to local storage
+            
+            // Refresh the UI lists immediately
+            renderManageList();
+            renderStats();
+            
+            alert(`匯入成功！共新增/更新了 ${addedCount} 個漢字。\n請切換到「數據中心」查看完整列表。`);
+            fileInput.value = "";
+        };
+        
+        reader.readAsText(file);
+    }
     
-    // Canvas resizing
+    // --- Canvas ---
+    const canvas = document.getElementById('drawing-board');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    
     function resizeCanvas() {
-        const rect = wrapper.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        ctx.lineWidth = 4;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.strokeStyle = "#333";
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width; canvas.height = rect.height;
+        ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#333";
     }
     window.addEventListener('load', () => { loadData(); resizeCanvas(); });
     window.addEventListener('resize', resizeCanvas);
-
-    // Drawing
-    function getTouchPos(canvasDom, touchEvent) {
-        var rect = canvasDom.getBoundingClientRect();
-        return {
-            x: touchEvent.touches[0].clientX - rect.left,
-            y: touchEvent.touches[0].clientY - rect.top
-        };
+    
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
     }
-    canvas.addEventListener('mousedown', function(e) { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
-    canvas.addEventListener('mousemove', function(e) { if (isDrawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
-    canvas.addEventListener('mouseup', function() { isDrawing = false; });
-    canvas.addEventListener('mouseout', function() { isDrawing = false; });
-    canvas.addEventListener('touchstart', function(e) { e.preventDefault(); if (e.target == canvas) { isDrawing = true; var pos = getTouchPos(canvas, e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); } }, {passive: false});
-    canvas.addEventListener('touchmove', function(e) { e.preventDefault(); if (isDrawing) { var pos = getTouchPos(canvas, e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); } }, {passive: false});
-    canvas.addEventListener('touchend', function(e) { isDrawing = false; });
-    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
-    // Game Flow
-    function shuffle(array) {
-        let currentIndex = array.length, randomIndex;
-        while (currentIndex != 0) {
-            randomIndex = Math.floor(Math.random() * currentIndex);
-            currentIndex--;
-            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-        }
-        return array;
-    }
-
-    function startQuiz() {
-        if(kanjiData.length === 0) { alert("題庫是空的，請先到設定新增漢字！"); return; }
-
-        currentQuestions = kanjiData.map(item => {
-            const randomWord = item.words[Math.floor(Math.random() * item.words.length)];
-            return {
-                id: item.char,
-                q_word: randomWord.w,
-                q_kana: randomWord.k,
-                hint: randomWord.h,
-                full_data: item
-            };
-        });
-        currentQuestions = shuffle(currentQuestions);
-        currentIndex = 0;
-        wrongAnswers = [];
-
-        document.getElementById("start-screen").classList.add("hidden");
-        document.getElementById("result-screen").classList.add("hidden");
-        document.getElementById("quiz-interface").classList.remove("hidden");
-        document.getElementById("total-q").innerText = currentQuestions.length;
-        
-        setTimeout(resizeCanvas, 100);
-        loadQuestion();
-    }
-
-    function loadQuestion() {
-        const q = currentQuestions[currentIndex];
-        document.getElementById("current-num").innerText = currentIndex + 1;
-        document.getElementById("q-kana").innerText = q.q_kana;
-        document.getElementById("q-hint").innerText = "ヒント: " + q.hint;
-        
-        clearCanvas();
-        // Hide details
-        document.getElementById("answer-details").style.display = "none";
-        document.getElementById("draw-controls").classList.remove("hidden");
-        document.getElementById("judge-controls").classList.add("hidden");
-    }
-
+    ['mousedown','touchstart'].forEach(ev=>canvas.addEventListener(ev, e=>{ isDrawing=true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); if(ev=='touchstart')e.preventDefault(); }));
+    ['mousemove','touchmove'].forEach(ev=>canvas.addEventListener(ev, e=>{ if(!isDrawing)return; ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); if(ev=='touchmove')e.preventDefault(); }));
+    ['mouseup','mouseout','touchend'].forEach(ev=>canvas.addEventListener(ev, ()=>{ isDrawing=false; }));
+    
+    function clearCanvas() { ctx.clearRect(0,0,canvas.width,canvas.height); }
     function speakQuestion() {
-        const q = currentQuestions[currentIndex];
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(q.q_kana);
-            utterance.lang = 'ja-JP';
-            utterance.rate = 0.85;
-            window.speechSynthesis.speak(utterance);
-        }
-    }
-
-    function showAnswer() {
-        const q = currentQuestions[currentIndex];
-        // Note: Overlay text removed as requested.
-        // We simply show the details block below.
-
-        document.getElementById("ans-word").innerText = q.q_word;
-        document.getElementById("ans-info").innerText = `目標漢字: ${q.id} (音: ${q.full_data.on} / 訓: ${q.full_data.kun})`;
-        document.getElementById("answer-details").style.display = "block";
-
-        document.getElementById("draw-controls").classList.add("hidden");
-        document.getElementById("judge-controls").classList.remove("hidden");
-    }
-
-    function recordResult(isCorrect) {
-        if (!isCorrect) wrongAnswers.push(currentQuestions[currentIndex]);
-        currentIndex++;
-        if (currentIndex < currentQuestions.length) {
-            loadQuestion();
-        } else {
-            showResult();
-        }
-    }
-
-    function showResult() {
-        document.getElementById("quiz-interface").classList.add("hidden");
-        document.getElementById("result-screen").classList.remove("hidden");
-        
-        const score = currentQuestions.length - wrongAnswers.length;
-        document.getElementById("score-display").innerText = `${score} / ${currentQuestions.length} 分`;
-        
-        const listContainer = document.getElementById("wrong-list");
-        listContainer.innerHTML = "";
-        
-        if (wrongAnswers.length === 0) {
-            listContainer.innerHTML = "<p style='color:green; font-weight:bold; font-size:1.2rem;'>太棒了！全對！🎉</p>";
-        } else {
-            wrongAnswers.forEach(item => {
-                const div = document.createElement("div");
-                div.style.borderBottom = "1px solid #eee";
-                div.style.padding = "10px";
-                div.style.display = "flex";
-                div.style.justifyContent = "space-between";
-                div.innerHTML = `
-                    <div><span style="color:#666; font-size:0.8rem;">${item.q_kana}</span><br><strong>${item.q_word}</strong></div>
-                    <div style="font-size:1.5rem; color:#e74c3c;">${item.id}</div>
-                `;
-                listContainer.appendChild(div);
-            });
+        const txt = document.getElementById('q-kana').innerText;
+        if('speechSynthesis' in window) {
+            const u = new SpeechSynthesisUtterance(txt);
+            u.lang='ja-JP'; u.rate=0.85;
+            speechSynthesis.speak(u);
         }
     }
 </script>
