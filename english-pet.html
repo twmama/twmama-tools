@@ -272,13 +272,13 @@
         <button class="btn" style="margin-top:auto;" onclick="Router.go('home')">ホームへ戻る</button>
     </div>
 
-    <!-- 4. Gallery Screen (已完整恢復) -->
+    <!-- 4. Gallery Screen -->
     <div id="screen-gallery" class="screen">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><h2>🦖 進化図鑑</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
         <div class="gallery-grid" id="gallery-container"></div>
     </div>
 
-    <!-- 5. Wordbook Screen (已完整恢復) -->
+    <!-- 5. Wordbook Screen -->
     <div id="screen-wordbook" class="screen">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><h2>📚 単語帳</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
         <div style="width:100%; overflow-y: auto; flex:1;"><div class="word-list" id="wordbook-container"></div></div>
@@ -296,8 +296,8 @@
 
         <div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
             <div style="font-weight:bold; margin-bottom:10px;">⚡ 每日任務量設定</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><label style="font-size:0.9rem;">🆕 新規単語 (New):</label><input type="number" id="limit-new" class="admin-input" style="width:80px; text-align:center;" min="0"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><label style="font-size:0.9rem;">🔄 復習単語 (Review):</label><input type="number" id="limit-review" class="admin-input" style="width:80px; text-align:center;" min="0"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><label style="font-size:0.9rem;">🆕 新規単語 (New):</label><input type="number" id="limit-new" class="admin-input" style="width:80px; text-align:center; padding:5px;" min="0"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><label style="font-size:0.9rem;">🔄 復習単語 (Review):</label><input type="number" id="limit-review" class="admin-input" style="width:80px; text-align:center; padding:5px;" min="0"></div>
             <button class="btn small" style="width:100%; background:#2ecc71; box-shadow:0 3px 0 #27ae60;" onclick="Admin.saveLimits()">設定を保存</button>
         </div>
 
@@ -310,6 +310,12 @@
         <div style="width:100%; background:#fff3e0; padding:12px; border-radius:15px; border:1px solid #ffe0b2; margin-bottom:15px; box-sizing:border-box;">
             <div style="font-weight:bold; margin-bottom:5px;">➕ 単語追加</div>
             <input type="text" id="add-en" placeholder="英語" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;"><input type="text" id="add-jp" placeholder="意味" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
+            <!-- 補回等級選擇 -->
+            <select id="add-lvl" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
+                <option value="1">必須単語</option>
+                <option value="2">頻出単語</option>
+                <option value="3">上級単語</option>
+            </select>
             <button class="btn small" style="margin-top:8px; width:100%;" onclick="Admin.add()">リストに追加</button>
         </div>
 
@@ -332,7 +338,7 @@
             <div id="modal-msg" style="margin-bottom:15px; white-space:pre-wrap; font-weight:bold; font-size:1.1rem; color:var(--primary);"></div>
             <div id="modal-content" style="margin-bottom:15px; font-size:0.95rem; line-height:1.5; text-align:left;"></div>
             <div class="modal-actions" style="display:flex; gap:10px; justify-content:center;">
-                <!-- 關鍵修正：確保關閉按鈕永遠具有直接關閉視窗的能力 -->
+                <!-- 關鍵修正：確保關閉按鈕具有物理關閉能力 -->
                 <button id="modal-cancel" class="btn outline small" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>
                 <button id="modal-ok" class="btn small hidden">OK</button>
             </div>
@@ -353,7 +359,7 @@ const PET_DATA = [
     { t: 150, e: "🦉", n: "知恵のフクロウ", desc: "森の賢者。物知りで、夜になると活發になる。", persona: "あなたは『老成したフクロウ博士』です。落ち着いていて、知的な話し方をします。「〜じゃ」「〜だのう」という博士口調で、語尾は「ホウ」です。", s: ["勉強熱心じゃのう", "夜は読書に限るホウ", "知恵こそ力じゃ、{name}"] },
     { t: 220, e: "🦅", n: "ハヤブサ", desc: "空のスピードスター. 目標に向かって一直線に飛ぶ。", persona: "あなたは『クールなハヤブサ』です。無駄口を叩かず、キザでカッコいい兄貴分です。スピード感のある短い文章で話します。語尾は「ぜ」。", s: ["遅れるなよ、{name}？", "風を切って進むぜ", "狙った獲物は逃さない"] },
     { t: 300, e: "🦢", n: "優雅な白鳥", desc: "湖の貴族。常に美しくあることを意識している。", persona: "あなたは『優雅な白鳥』です。丁寧語やお嬢様言葉（〜ですわ、〜ますの）を使います。美意識が高く、上品な振る舞いを好みます。", s: ["ごきげんよう、{name}", "優雅に泳ぎましょう", "美しい言葉ですわね"] },
-    { t: 400, e: "🦖", n: "わんぱく恐竜", desc: "力が強くて少し難暴だけど、実は優しい心の持ち主。", persona: "あなたは『元気なティラノサウルス』です。ガキ大將のような性格で、聲が大きいです。語尾に「ガオ！」「だゾ！」を付けます。", s: ["腹減ったガオ！", "肉食いたいゾ、{name}！", "強くなるんだガオ！"] },
+    { t: 400, e: "Rex", n: "わんぱく恐竜", desc: "力が強くて少し難暴だけど、実は優しい心の持ち主。", persona: "あなたは『元気なティラノサウルス』です。ガキ大將のような性格で、聲が大きいです。語尾に「ガオ！」「だゾ！」を付けます。", s: ["腹減ったガオ！", "肉食いたいゾ、{name}！", "強くなるんだガオ！"] },
     { t: 550, e: "🦕", n: "のんびり首長竜", desc: "長い首で遠くを見渡す. とても気が長くて穏やか。", persona: "あなたは『のんびり屋の首長竜』です。話すのがとてもゆっくりで、間延びした口調です。「〜だねぇ」「〜だよぉ」と話します。", s: ["いい天気だねぇ、{name}", "草がおいしいよぉ...", "急がなくていいよぉ"] },
     { t: 750, e: "🐊", n: "古代ワニ", desc: "水辺のガーディアン. 一度噛み付いたら離さない集中力。", persona: "あなたは『ハードボイルドなワニ』です。聲が低く、渋い性格です。粘り強さや集中力を重視します。語尾は「ギザ」或者「だ」。", s: ["集中しろ、{name}...", "チャンスを待つんだ", "俺のキバは鋭いギザ"] },
     { t: 950, e: "🐉", n: "飛竜ワイバーン", desc: "天空の支配者. 嵐の中でも自由に飛び回る。", persona: "あなたは『誇り高き飛竜』です。自信滿々で、勇者（ユーザー）を認める相棒のような存在です。「我」「貴様（親愛を込めて）」などを使います。語尾は「ギャオ！」", s: ["馬鹿め！我の背に乗れ！", "風など恐れぬ！", "貴様ならできるギャオ！"] },
@@ -361,6 +367,8 @@ const PET_DATA = [
     { t: 1200, e: "🦄", n: "聖なる守護神", desc: "奇跡を呼ぶ存在. 純粋な心を持つ者の前にだけ現れる。", persona: "あなたは『神秘的なユニコーン』です。敬語で、聖職者のように穏やかで慈愛に滿ちた話し方をします。「〜ですね」「光あれ」などが特徴です。", s: ["光が導くでしょう", "恐れることはありません", "{name}、奇跡を信じなさい"] },
     { t: 1300, e: "🔥", n: "不死鳥フェニックス", desc: "永遠の炎をまとう bird. 何度でも蘇る不屈の精神の象徴。", persona: "あなたは『熱血の不死鳥』です。松岡修造のように超ポジティブで熱苦しい性格です！「燃えろ！」「諦めるな！」が口癖です。", s: ["燃え上がれ！！{name}！", "君の情熱を感じるぞ！", "ネバーギブアップ！！"] }
 ];
+
+const COMMON_SPEECHES = ["{name}、大好きだよ！", "よくできました！", "一緒に頑張ろう！", "英語って楽しいね、{name}！", "天才じゃない！？", "キラキラしてるね！"];
 
 const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},{w:"plan",m:"計画",l:1},{w:"enjoy",m:"楽しむ",l:1},{w:"library",m:"図書館",l:1},{w:"visit",m:"訪れる",l:1},{w:"because",m:"なぜなら",l:1},{w:"weather",m:"天気",l:1},{w:"friend",m:"友達",l:1},{w:"school",m:"学校",l:1},{w:"student",m:"生徒",l:1},{w:"family",m:"家族",l:1},{w:"house",m:"家",l:1},{w:"room",m:"部屋",l:1},{w:"study",m:"勉強する",l:1},{w:"play",m:"遊ぶ/弾く",l:1},{w:"watch",m:"見る",l:1},{w:"cook",m:"料理する",l:1},{w:"make",m:"作る",l:1},{w:"buy",m:"買う",l:1},{w:"want",m:"欲しい",l:1},{w:"like",m:"好き",l:1},{w:"have",m:"持っている",l:1},{w:"go",m:"行く",l:1},{w:"come",m:"来る",l:1},{w:"see",m:"會う/見る",l:1},{w:"eat",m:"食べる",l:1},{w:"give",m:"與える",l:1},{w:"take",m:"取る/連れて行く",l:1},{w:"help",m:"助ける",l:1},{w:"know",m:"知っている",l:1},{w:"think",m:"思う",l:1},{w:"say",m:"言う",l:1},{w:"look",m:"見る",l:1},{w:"use",m:"使う",l:1},{w:"find",m:"見つける",l:1},{w:"need",m:"必要とする",l:1},{w:"work",m:"働く",l:1},{w:"try",m:"試す",l:1},{w:"ask",m:"尋ねる",l:1},{w:"talk",m:"話す",l:1},{w:"start",m:"始める",l:1},{w:"finish",m:"終える",l:1},{w:"live",m:"住む",l:1},{w:"stay",m:"滯在する",l:1},{w:"move",m:"動く/引っ越す",l:1},{w:"walk",m:"歩く",l:1},{w:"run",m:"走る",l:1},{w:"read",m:"読む",l:1},{w:"write",m:"書く",l:1},{w:"speak",m:"話す",l:1},{w:"listen",m:"聞く",l:1},{w:"open",m:"開ける",l:1},{w:"close",m:"閉める",l:1},{w:"happy",m:"幸せな",l:1},{w:"sad",m:"悲しい",l:1},{w:"angry",m:"怒った",l:1},{w:"tired",m:"疲れた",l:1},{w:"hungry",m:"空腹の",l:1},{w:"thirsty",m:"喉が渇いた",l:1},{w:"good",m:"良い",l:1},{w:"bad",m:"悪い",l:1},{w:"big",m:"大きい",l:1},{w:"small",m:"小さい",l:1},{w:"long",m:"長い",l:1},{w:"short",m:"短い",l:1},{w:"new",m:"新しい",l:1},{w:"old",m:"古い",l:1},{w:"hot",m:"暑い",l:1},{w:"cold",m:"寒い",l:1},{w:"warm",m:"暖かい",l:1},{w:"cool",m:"涼しい",l:1},{w:"fast",m:"速い",l:1},{w:"slow",m:"遅い",l:1},{w:"easy",m:"簡単な",l:1},{w:"difficult",m:"難しい",l:1},{w:"interesting",m:"面白い",l:1},{w:"boring",m:"退屈な",l:1},{w:"fun",m:"楽しい",l:1},{w:"busy",m:"忙しい",l:1},{w:"free",m:"暇な/自由な",l:1},{w:"favorite",m:"一番好きな",l:1},{w:"popular",m:"人気のある",l:1},{w:"important",m:"重要な",l:1},{w:"beautiful",m:"美しい",l:1},{w:"famous",m:"有名な",l:1},{w:"kind",m:"親切な",l:1},{w:"time",m:"時間",l:1},{w:"day",m:"日",l:1},{w:"week",m:"週",l:1},{w:"month",m:"月",l:1},{w:"year",m:"年",l:1},{w:"morning",m:"朝",l:1},{w:"afternoon",m:"午後",l:1},{w:"evening",m:"夕方",l:1},{w:"night",m:"夜",l:1},{w:"today",m:"今日",l:1},{w:"tomorrow",m:"明日",l:1},{w:"yesterday",m:"昨日",l:1},{w:"summer",m:"夏",l:1},{w:"winter",m:"冬",l:1},{w:"spring",m:"春",l:1},{w:"fall",m:"秋",l:1},{w:"vacation",m:"休暇",l:1},{w:"holiday",m:"休日",l:1},{w:"breakfast",m:"朝食",l:1},{w:"lunch",m:"晝食",l:1},{w:"dinner",m:"夕食",l:1},{w:"food",m:"食べ物",l:1},{w:"water",m:"水",l:1},{w:"book",m:"本",l:1},{w:"pen",m:"ペン",l:1},{w:"computer",m:"コンピュータ",l:1},{w:"phone",m:"電話",l:1},{w:"money",m:"お金",l:1},{w:"bag",m:"鞄",l:1},{w:"clothes",m:"服",l:1},{w:"car",m:"車",l:1},{w:"bus",m:"バス",l:1},{w:"train",m:"電車",l:1},{w:"bike",m:"自転車",l:1},{w:"city",m:"都市",l:1},{w:"park",m:"公園",l:1},{w:"hospital",m:"病院",l:1},{w:"station",m:"駅",l:1},{w:"restaurant",m:"レストラン",l:1},{w:"museum",m:"博物館",l:1},{w:"idea",m:"考え",l:1},{w:"problem",m:"問題",l:1},{w:"question",m:"質問",l:1},{w:"answer",m:"答え",l:1},{w:"story",m:"物語",l:1},{w:"letter",m:"手紙",l:1},{w:"picture",m:"寫真",l:1},{w:"music",m:"音樂",l:1},{w:"movie",m:"映画",l:1},{w:"sport",m:"スポーツ",l:1},{w:"game",m:"ゲーム",l:1},{w:"art",m:"芸術",l:1},{w:"history",m:"歴史",l:1},{w:"science",m:"科學",l:1},{w:"math",m:"數學",l:1},{w:"English",m:"英語",l:1},{w:"Japanese",m:"日本語",l:1},{w:"animal",m:"動物",l:1},{w:"dog",m:"犬",l:1},{w:"cat",m:"貓",l:1},{w:"bird",m:"鳥",l:1},{w:"fish",m:"魚",l:1},{w:"flower",m:"花",l:1},{w:"tree",m:"木",l:1},{w:"river",m:"川",l:1},{w:"sea",m:"海",l:1},{w:"mountain",m:"山",l:1},{w:"sky",m:"空",l:1},{w:"sun",m:"太陽",l:1},{w:"moon",m:"月",l:1},{w:"star",m:"星",l:1},{w:"rain",m:"雨",l:1},{w:"snow",m:"雪",l:1},{w:"wind",m:"風",l:1},{w:"cloud",m:"雲",l:1}];
 
@@ -417,7 +425,7 @@ const App = {
 };
 
 const Gemini = {
-    // 【修正】模型名稱改為 gemini-3-flash-preview 並加入完整報錯日誌
+    // 【修正】模型名稱改為實測正確的 gemini-3-flash-preview 並強化日誌
     async call(prompt, systemPrompt = "") {
         const apiKey = App.apiKey || "";
         if (!apiKey) { UI.alert("設定エラー", "APIキーを保存してください"); return null; }
@@ -425,7 +433,6 @@ const Gemini = {
         
         for (let i = 0; i < 5; i++) {
             try {
-                // 將指令與內容合併，這是目前最穩定的 Payload 格式
                 const fullPrompt = systemPrompt ? `${systemPrompt}\n\nTask: ${prompt}` : prompt;
                 const payload = { contents: [{ parts: [{ text: fullPrompt }] }] };
 
@@ -453,7 +460,6 @@ const Gemini = {
         return null;
     },
 
-    // 【救回】寵物單語教室功能
     async openPetCoach() {
         const status = App.getPetStatus(), currentPet = PET_DATA[status.level - 1]; 
         const strongWords = App.db.filter(w => w.mastered).sort((a,b) => b.lastReviewTime - a.lastReviewTime).slice(0, 3);
@@ -477,11 +483,10 @@ const Gemini = {
             const formatted = res.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
             document.getElementById('modal-content').innerHTML = `<div style="line-height:1.8; text-align:center;">${formatted}</div><button class="btn small" style="margin-top:20px; width:100%;" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>`;
         } else {
-            document.getElementById('modal-content').innerHTML = `<p>通信に失敗しました。APIキーまたはネットワークを確認してね！</p><button class="btn small" style="margin-top:20px; width:100%;" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>`;
+            document.getElementById('modal-content').innerHTML = `<p>通信に失敗しました。APIキー或者網路狀況を確認してね！</p><button class="btn small" style="margin-top:20px; width:100%;" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>`;
         }
     },
 
-    // 【救回】故事生成與等級連動邏輯
     async generateStory(target) {
         const boxId = target === 'home' ? 'home-ai-box' : 'result-ai-box', contentId = target === 'home' ? 'home-ai-content' : 'result-ai-content';
         const box = document.getElementById(boxId), content = document.getElementById(contentId);
@@ -489,7 +494,6 @@ const Gemini = {
         
         const status = App.getPetStatus(), level = status.level, targetLines = level * 2, todayTs = new Date().setHours(0,0,0,0);
         
-        // 單字保底選取
         let pool = App.db.filter(w => w.lastReviewTime >= todayTs).map(w => w.w);
         if (pool.length < 5) pool.push(...App.db.filter(w => w.totalAttempts > 0 && (w.correctCount/w.totalAttempts) < 0.6 && !pool.includes(w.w)).map(w => w.w));
         if (pool.length < 5) pool.push(...App.db.filter(w => w.mastered && !pool.includes(w.w)).map(w => w.w));
@@ -498,13 +502,13 @@ const Gemini = {
         
         const system = `You are a storyteller for 10-year-olds. Use Eiken Grade 3 level English.
         Exactly ${targetLines} short sentences. Start a new line (<br>) for EVERY sentence. 
-        Highlight these words in <b>: ${selection.join(', ')}. Do not use markdown code blocks.`;
+        Highlight these words in <b>: ${selection.join(', ')}. No code blocks.`;
 
         const res = await this.call(`Write a funny story using these words: ${selection.join(', ')}`, system);
         if (res) {
             content.innerHTML = res.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') + '<br><b>読んでくれてありがとう！</b>';
         } else {
-            content.innerText = "物語の生成に失敗しました。もう一度ボタンを押してみてね！";
+            content.innerText = "物語の生成に失敗しました。もう一度押してみてね！";
         }
     },
 
@@ -564,7 +568,6 @@ const UI = {
         document.querySelectorAll('.mission-new-count').forEach(el => el.innerText = news);
         document.querySelectorAll('.mission-review-count').forEach(el => el.innerText = reviews);
     },
-    // 【救回】進化圖鑑渲染
     renderGallery() {
         const container = document.getElementById('gallery-container'), mastered = App.db.filter(w => w.mastered).length;
         container.innerHTML = '';
@@ -576,7 +579,6 @@ const UI = {
             container.appendChild(div);
         });
     },
-    // 【救回】單語帳渲染
     renderWordbook() {
         const container = document.getElementById('wordbook-container'); container.innerHTML = '';
         [...App.db].sort((a,b) => a.w.localeCompare(b.w)).forEach(w => {
@@ -592,7 +594,7 @@ const UI = {
         document.getElementById('modal-ok').classList.add('hidden'); cancel.innerText = "閉じる"; modal.classList.add('show');
         document.getElementById('gen-sentence-btn').onclick = async () => {
             const box = document.getElementById('detail-ai-box'); box.classList.add('show');
-            const res = await Gemini.call(`Generate a simple English sentence for a kid using "${word.w}". Format: English [break] Japanese`);
+            const res = await Gemini.call(`Generate a simple English sentence for a child using "${word.w}". Format: English [break] Japanese`);
             box.innerText = res || "失敗しました";
         };
     },
@@ -642,7 +644,7 @@ const Game = {
         document.getElementById('game-meaning').innerText = w.m;
         document.getElementById('game-word-tag').innerText = WORD_LEVELS[w.l];
         document.getElementById('game-word-tag').className = `tag lvl-${w.l}`;
-        document.getElementById('step-label').innerText = `Step ${step}: ${step===1?"覚える":step===2?"穴埋め":"テスト"}`;
+        document.getElementById('step-label').innerText = `Step ${step}: ${step===1?"覚える":step===2?"穴埋め":"測試"}`;
         document.getElementById('ai-sentence-box').classList.remove('show');
         document.getElementById('ai-sentence-btn').classList.toggle('hidden', step !== 1);
         this.speakWord();
@@ -685,22 +687,35 @@ const Admin = {
         document.getElementById('nickname-input').value = App.userNickname;
         document.getElementById('limit-new').value = App.dailyNewLimit;
         document.getElementById('limit-review').value = App.dailyReviewLimit;
-        const table = document.getElementById('admin-table'); table.innerHTML = `<tr><th>単語</th><th>正解率</th><th>操作</th></tr>`;
+        const table = document.getElementById('admin-table'); table.innerHTML = `<tr><th>単語</th><th>正解率</th><th>次回</th><th>操作</th></tr>`;
         [...App.db].sort((a,b) => a.l - b.l || a.w.localeCompare(b.w)).forEach(w => {
-            const acc = w.totalAttempts > 0 ? Math.round((w.correctCount/w.totalAttempts)*100) : 0;
-            tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${w.w}</b><br><small>${w.m}</small></td><td>${acc}%</td><td><button class="btn small outline" onclick="Admin.resetItem('${w.w}')">↺</button></td>`;
+            const tr = document.createElement('tr'), acc = w.totalAttempts > 0 ? Math.round((w.correctCount/w.totalAttempts)*100) : 0;
+            // 【重要】救回「次回」數據顯示
+            let next = "New"; if(w.nextReview > 0) { const d = Math.ceil((w.nextReview - Date.now()) / 86400000); next = d <= 0 ? "<span style='color:red;font-weight:bold;'>今日</span>" : d + "日後"; }
+            tr.innerHTML = `<td><b>${w.w}</b><br><small>${w.m}</small></td><td>${acc}%<br><small>${w.correctCount}/${w.totalAttempts}</small></td><td>${next}</td><td><button class="btn small outline" onclick="Admin.resetItem('${w.w}')">↺</button></td>`;
             table.appendChild(tr);
         });
     },
     saveNickname() { localStorage.setItem('spellquest_nickname', document.getElementById('nickname-input').value.trim()); App.userNickname = document.getElementById('nickname-input').value.trim(); UI.alert("成功", "保存しました！"); },
     saveLimits() { App.dailyNewLimit = parseInt(document.getElementById('limit-new').value); App.dailyReviewLimit = parseInt(document.getElementById('limit-review').value); localStorage.setItem('spellquest_newLimit', App.dailyNewLimit); localStorage.setItem('spellquest_reviewLimit', App.dailyReviewLimit); UI.alert("成功", "保存しました！"); UI.updateHome(); },
     saveApiKey() { localStorage.setItem('gemini_api_key', document.getElementById('api-key-input').value.trim()); App.apiKey = document.getElementById('api-key-input').value.trim(); UI.alert("成功", "保存しました！"); },
+    // 【修正】強化的單語追加功能，加入等級選擇與防錯提示
     add() {
-        const en = document.getElementById('add-en').value.trim(), jp = document.getElementById('add-jp').value.trim();
-        if(!en || !jp) return; App.db.push(App.createObj({w:en, m:jp, l:1})); App.save(); this.render();
+        const enInput = document.getElementById('add-en');
+        const jpInput = document.getElementById('add-jp');
+        const lvlInput = document.getElementById('add-lvl');
+        const en = enInput.value.trim();
+        const jp = jpInput.value.trim();
+        const lvl = parseInt(lvlInput.value) || 1;
+        if(!en || !jp) return UI.alert("エラー", "単語與意味を入力してください");
+        if(App.db.find(w => w.w.toLowerCase() === en.toLowerCase())) return UI.alert("エラー", "重複しています");
+        App.db.push(App.createObj({w:en, m:jp, l:lvl}));
+        App.save();
+        enInput.value = ''; jpInput.value = '';
+        UI.alert("成功", "追加しました！");
+        this.render();
+        UI.updateHome();
     },
-    // 【救回】匯出功能邏輯
     exportCSV() {
         const dateObj = new Date(), todayStr = dateObj.toISOString().split('T')[0], streak = localStorage.getItem('streak') || 0;
         const headers = ["Date", "Streak", "Word", "Meaning", "Level", "Correct", "Attempts", "Accuracy", "Interval", "LastReview"];
@@ -717,7 +732,9 @@ const Admin = {
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
     },
     processCSV(input) {
-        const reader = new FileReader(); reader.onload = (e) => {
+        const file = input.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
             const text = e.target.result, lines = text.split(/\r?\n/);
             lines.forEach(l => {
                 const p = l.split(','); if(p.length < 2) return;
@@ -727,7 +744,7 @@ const Admin = {
             });
             App.save(); Admin.render(); UI.updateHome(); UI.alert("完了", "成功！");
         };
-        reader.readAsText(input.files[0]);
+        reader.readAsText(file);
     },
     resetItem(word) { const w = App.db.find(i => i.w === word); if(w) { Object.assign(w, {mastered: false, interval: 0, nextReview: 0, correctCount: 0, totalAttempts: 0}); App.save(); Admin.render(); } },
     resetAll() { UI.confirm("⚠️ 警告", "全データを消去しますか？", () => { localStorage.clear(); location.reload(); }); }
