@@ -174,7 +174,6 @@
         .btn.small { padding: 8px 12px; font-size: 0.8rem; width: auto; border-radius: 10px; }
         .btn.danger { background: var(--danger); box-shadow: 0 3px 0 #c0392b; font-size: 0.75rem; padding: 5px 10px; }
         
-        /* 修正：優化後台正方形小按鈕樣式，確保橫向緊湊排列 */
         .btn.icon-btn { 
             width: 28px; 
             height: 28px; 
@@ -366,7 +365,7 @@ const PET_DATA = [
     { t: 150, e: "🦉", n: "知恵のフクロウ", desc: "森の賢者。物知りで、夜になると活發になる。", persona: "あなたは『老成したフクロウ博士』です。落ち着いていて、知的な話し方をします。「〜じゃ」「〜だのう」という博士口調で、語尾は「ホウ」です。", s: ["勉強熱心じゃのう", "夜は読書に限るホウ", "知恵こそ力じゃ、{name}"] },
     { t: 220, e: "🦅", n: "ハヤブサ", desc: "空のスピードスター. 目標に向かって一直線に飛ぶ。", persona: "あなたは『クールなハヤブサ』です。無駄口を叩かず、キザでカッコいい兄貴分です。スピード感のある短い文章で話します。語尾は「ぜ」。", s: ["遅れるなよ、{name}？", "風を切って進むぜ", "狙った獲物は逃さない"] },
     { t: 300, e: "🦢", n: "優雅な白鳥", desc: "湖の貴族。常に美しくあることを意識している。", persona: "あなたは『優雅な白鳥』です。丁寧語やお嬢様言葉（〜ですわ、〜ますの）を使います。美意識が高く、上品な振る舞いを好みます。", s: ["ごきげんよう、{name}", "優雅に泳ぎましょう", "美しい言葉ですわね"] },
-    { t: 400, e: "Rex", n: "わんぱく恐竜", desc: "力が強くて少し難暴だけど、実は優しい心の持ち主。", persona: "あなたは『元気なティラノサウルス』です。ガキ大將のような性格で、聲が大きいです。語尾に「ガオ！」「だゾ！」を付けます。", s: ["腹減ったガオ！", "肉食いたいゾ, {name}！", "強くなるんだガオ！"] },
+    { t: 400, e: "🦖", n: "わんぱく恐竜", desc: "力が強くて少し乱暴だけど、実は優しい心の持ち主。", persona: "あなたは『元気なティラノサウルス』です。ガキ大將のような性格で、聲が大きいです。語尾に「ガオ！」「だゾ！」を付けます。", s: ["腹減ったガオ！", "肉食いたいゾ, {name}！", "強くなるんだガオ！"] },
     { t: 550, e: "🦕", n: "首長竜", desc: "長い首で遠くを見渡す. とても気が長くて穏やか。", persona: "あなたは『のんびり屋の首長竜』です。話すのがとてもゆっくりで、間延びした口調です。「〜だねぇ」「〜だよぉ」と話します。", s: ["いい天気だねぇ、{name}", "草がおいしいよぉ...", "急がなくていいよぉ"] },
     { t: 750, e: "🐊", n: "古代ワニ", desc: "水辺のガーディアン. 一度噛み付いたら離さない集中力。", persona: "あなたは『ハードボイルドなワニ』です。聲が低く、渋い性格です。粘り強さや集中力を重視します。語尾は「ギザ」或者「だ」。", s: ["集中しろ、{name}...", "チャンスを待つんだ", "俺のキバは鋭いギザ"] },
     { t: 950, e: "🐉", n: "飛竜ワイバーン", desc: "天空の支配者. 嵐の中でも自由に飛び回る。", persona: "あなたは『誇り高き飛竜』です。自信滿々で、勇者（ユーザー）を認める相棒のような存在です。「我」「貴様（親愛を込めて）」などを使います。語尾は「ギャオ！」", s: ["馬鹿め！我の背に乗れ！", "風など恐れぬ！", "貴様ならできるギャオ！"] },
@@ -374,6 +373,8 @@ const PET_DATA = [
     { t: 1200, e: "🦄", n: "聖なる守護神", desc: "奇跡を呼ぶ存在. 純粋な心を持つ者の前にだけ現れる。", persona: "あなたは『神秘的なユニコーン』です。敬語で、聖職者のように穏やかで慈愛に滿ちた話し方をします。「〜ですね」「光あれ」などが特徴です。", s: ["光が導くでしょう", "恐れることはありません", "{name}、奇跡を信じなさい"] },
     { t: 1300, e: "🔥", n: "不死鳥フェニックス", desc: "永遠の炎をまとう bird. 何度でも蘇る不屈の精神の象徴。", persona: "あなたは『熱血の不死鳥』です。松岡修造のように超ポジティブで熱苦しい性格です！「燃えろ！」「諦めるな！」が口癖です。", s: ["燃え上がれ！！{name}！", "君の情熱を感じるぞ！", "ネバーギブアップ！！"] }
 ];
+
+const COMMON_SPEECHES = ["{name}、大好きだよ！", "よくできました！", "一緒に頑張ろう！", "英語って楽しいね、{name}！", "天才じゃない！？", "キラキラしてるね！"];
 
 const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},{w:"plan",m:"計画",l:1},{w:"enjoy",m:"楽しむ",l:1},{w:"library",m:"図書館",l:1},{w:"visit",m:"訪れる",l:1},{w:"because",m:"なぜなら",l:1},{w:"weather",m:"天気",l:1},{w:"friend",m:"友達",l:1},{w:"school",m:"学校",l:1},{w:"student",m:"生徒",l:1},{w:"family",m:"家族",l:1},{w:"house",m:"家",l:1},{w:"room",m:"部屋",l:1},{w:"study",m:"勉強する",l:1},{w:"play",m:"遊ぶ/弾く",l:1},{w:"watch",m:"見る",l:1},{w:"cook",m:"料理する",l:1},{w:"make",m:"作る",l:1},{w:"buy",m:"買う",l:1},{w:"want",m:"欲しい",l:1},{w:"like",m:"好き",l:1},{w:"have",m:"持っている",l:1},{w:"go",m:"行く",l:1},{w:"come",m:"来る",l:1},{w:"see",m:"會う/見る",l:1},{w:"eat",m:"食べる",l:1},{w:"give",m:"與える",l:1},{w:"take",m:"取る/連れて行く",l:1},{w:"help",m:"助ける",l:1},{w:"know",m:"知っている",l:1},{w:"think",m:"思う",l:1},{w:"say",m:"言う",l:1},{w:"look",m:"見る",l:1},{w:"use",m:"使う",l:1},{w:"find",m:"見つける",l:1},{w:"need",m:"必要とする",l:1},{w:"work",m:"働く",l:1},{w:"try",m:"試す",l:1},{w:"ask",m:"尋ねる",l:1},{w:"talk",m:"話す",l:1},{w:"start",m:"始める",l:1},{w:"finish",m:"終える",l:1},{w:"live",m:"住む",l:1},{w:"stay",m:"滯在する",l:1},{w:"move",m:"動く/引っ越す",l:1},{w:"walk",m:"歩く",l:1},{w:"run",m:"走る",l:1},{w:"read",m:"読む",l:1},{w:"write",m:"書く",l:1},{w:"speak",m:"話す",l:1},{w:"listen",m:"聞く",l:1},{w:"open",m:"開ける",l:1},{w:"close",m:"閉める",l:1},{w:"happy",m:"幸せな",l:1},{w:"sad",m:"悲しい",l:1},{w:"angry",m:"怒った",l:1},{w:"tired",m:"疲れた",l:1},{w:"hungry",m:"空腹の",l:1},{w:"thirsty",m:"喉が渇いた",l:1},{w:"good",m:"良い",l:1},{w:"bad",m:"悪い",l:1},{w:"big",m:"大きい",l:1},{w:"small",m:"小さい",l:1},{w:"long",m:"長い",l:1},{w:"short",m:"短い",l:1},{w:"new",m:"新しい",l:1},{w:"old",m:"古い",l:1},{w:"hot",m:"暑い",l:1},{w:"cold",m:"寒い",l:1},{w:"warm",m:"暖かい",l:1},{w:"cool",m:"涼しい",l:1},{w:"fast",m:"速い",l:1},{w:"slow",m:"遅い",l:1},{w:"easy",m:"簡単な",l:1},{w:"difficult",m:"難しい",l:1},{w:"interesting",m:"面白い",l:1},{w:"boring",m:"退屈な",l:1},{w:"fun",m:"楽しい",l:1},{w:"busy",m:"忙しい",l:1},{w:"free",m:"暇な/自由な",l:1},{w:"favorite",m:"一番好きな",l:1},{w:"popular",m:"人気のある",l:1},{w:"important",m:"重要な",l:1},{w:"beautiful",m:"美しい",l:1},{w:"famous",m:"有名な",l:1},{w:"kind",m:"親切な",l:1},{w:"time",m:"時間",l:1},{w:"day",m:"日",l:1},{w:"week",m:"週",l:1},{w:"month",m:"月",l:1},{w:"year",m:"年",l:1},{w:"morning",m:"朝",l:1},{w:"afternoon",m:"午後",l:1},{w:"evening",m:"夕方",l:1},{w:"night",m:"夜",l:1},{w:"today",m:"今日",l:1},{w:"tomorrow",m:"明日",l:1},{w:"yesterday",m:"昨日",l:1},{w:"summer",m:"夏",l:1},{w:"winter",m:"冬",l:1},{w:"spring",m:"春",l:1},{w:"fall",m:"秋",l:1},{w:"vacation",m:"休暇",l:1},{w:"holiday",m:"休日",l:1},{w:"breakfast",m:"朝食",l:1},{w:"lunch",m:"晝食",l:1},{w:"dinner",m:"夕食",l:1},{w:"food",m:"食べ物",l:1},{w:"water",m:"水",l:1},{w:"book",m:"本",l:1},{w:"pen",m:"ペン",l:1},{w:"computer",m:"コンピュータ",l:1},{w:"phone",m:"電話",l:1},{w:"money",m:"お金",l:1},{w:"bag",m:"鞄",l:1},{w:"clothes",m:"服",l:1},{w:"car",m:"車",l:1},{w:"bus",m:"バス",l:1},{w:"train",m:"電車",l:1},{w:"bike",m:"自転車",l:1},{w:"city",m:"都市",l:1},{w:"park",m:"公園",l:1},{w:"hospital",m:"病院",l:1},{w:"station",m:"駅",l:1},{w:"restaurant",m:"レストラン",l:1},{w:"museum",m:"博物館",l:1},{w:"idea",m:"考え",l:1},{w:"problem",m:"問題",l:1},{w:"question",m:"質問",l:1},{w:"answer",m:"答え",l:1},{w:"story",m:"物語",l:1},{w:"letter",m:"手紙",l:1},{w:"picture",m:"寫真",l:1},{w:"music",m:"音樂",l:1},{w:"movie",m:"映画",l:1},{w:"sport",m:"スポーツ",l:1},{w:"game",m:"ゲーム",l:1},{w:"art",m:"芸術",l:1},{w:"history",m:"歴史",l:1},{w:"science",m:"科學",l:1},{w:"math",m:"數學",l:1},{w:"English",m:"英語",l:1},{w:"Japanese",m:"日本語",l:1},{w:"animal",m:"動物",l:1},{w:"dog",m:"犬",l:1},{w:"cat",m:"貓",l:1},{w:"bird",m:"鳥",l:1},{w:"fish",m:"魚",l:1},{w:"flower",m:"花",l:1},{w:"tree",m:"木",l:1},{w:"river",m:"川",l:1},{w:"sea",m:"海",l:1},{w:"mountain",m:"山",l:1},{w:"sky",m:"空",l:1},{w:"sun",m:"太陽",l:1},{w:"moon",m:"月",l:1},{w:"star",m:"星",l:1},{w:"rain",m:"雨",l:1},{w:"snow",m:"雪",l:1},{w:"wind",m:"風",l:1},{w:"cloud",m:"雲",l:1}];
 
@@ -435,7 +436,6 @@ const Gemini = {
         const apiKey = App.apiKey || "";
         if (!apiKey) { UI.alert("設定エラー", "APIキーを保存してください"); return null; }
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-        
         for (let i = 0; i < 5; i++) {
             try {
                 const fullPrompt = systemPrompt ? `${systemPrompt}\n\nTask: ${prompt}` : prompt;
@@ -479,7 +479,7 @@ const Gemini = {
             const formatted = res.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
             document.getElementById('modal-content').innerHTML = `<div style="line-height:1.8; text-align:center;">${formatted}</div><button class="btn small" style="margin-top:20px; width:100%;" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>`;
         } else {
-            document.getElementById('modal-content').innerHTML = `<p>通信に失敗しました。APIキーを確認してね！</p><button class="btn small" style="margin-top:20px; width:100%;" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>`;
+            document.getElementById('modal-content').innerHTML = `<p>通信に失敗しました。APIキー或者網路狀況を確認してね！</p><button class="btn small" style="margin-top:20px; width:100%;" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>`;
         }
     },
 
@@ -513,6 +513,80 @@ const Gemini = {
         const res = await this.call(`Create a simple English sentence for a kid using "${Game.current.w}". English & Japanese.`);
         if (res) content.innerText = res; else content.innerText = "生成失敗";
     }
+};
+
+const Game = {
+    queue: [], current: null, total: 0,
+    start() {
+        const now = Date.now(), d = new Date().toISOString().split('T')[0];
+        const dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${d}`) || 0);
+        let reviews = App.db.filter(w => !w.paused && w.mastered && w.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview).slice(0, App.dailyReviewLimit);
+        let news = []; const remaining = App.dailyNewLimit - dailyNewCount;
+        if (remaining > 0) news = App.db.filter(w => !w.paused && !w.mastered).sort(() => 0.5 - Math.random()).slice(0, remaining);
+        this.queue = [...reviews, ...news];
+        if(!this.queue.length) { UI.alert("完了！", "今日のタスクはありません。また明日！"); return; }
+        this.total = this.queue.length;
+        this.queue.forEach(w => { 
+            w.sessionStep = (w.totalAttempts > 0 || w.mastered) ? 3 : 1; 
+            w.sessionWrong = false; 
+        });
+        Router.go('game'); this.next();
+    },
+    next() {
+        const pending = this.queue.filter(w => w.sessionStep <= 3);
+        if(!pending.length) { Router.go('result'); return; }
+        this.current = pending[0];
+        document.getElementById('progress-text').innerText = (this.total - pending.length + 1) + " / " + this.total;
+        document.getElementById('progress-fill').style.width = ((this.total - pending.length + 1)/this.total * 100) + '%';
+        this.render();
+    },
+    render() {
+        const w = this.current, step = w.sessionStep, input = document.getElementById('game-input'), hint = document.getElementById('game-hint');
+        document.getElementById('game-meaning').innerText = w.m;
+        document.getElementById('game-word-tag').innerText = WORD_LEVELS[w.l];
+        document.getElementById('game-word-tag').className = `tag lvl-${w.l}`;
+        document.getElementById('step-label').innerText = `Step ${step}: ${step===1?"覚える":step===2?"穴埋め":"テスト"}`;
+        document.getElementById('ai-sentence-box').classList.remove('show');
+        document.getElementById('ai-sentence-btn').classList.toggle('hidden', step !== 1);
+        this.speakWord();
+        if(step === 1) {
+            hint.innerText = w.w; hint.classList.remove('hidden'); input.classList.add('hidden');
+            document.getElementById('action-area').innerHTML = `<button class="btn" onclick="Game.current.sessionStep=2; Game.next()">覚えた！</button>`;
+        } else {
+            hint.innerText = step === 2 ? w.w.replace(/[aeiou]/g, '_') : "";
+            hint.classList.toggle('hidden', step === 3);
+            input.classList.remove('hidden'); input.value = ''; 
+            input.readOnly = true; setTimeout(() => { input.readOnly = false; input.focus(); }, 250);
+            document.getElementById('action-area').innerHTML = `<button class="btn" onclick="Game.check()">チェック！</button>`;
+        }
+    },
+    check() {
+        const val = document.getElementById('game-input').value.trim().toLowerCase();
+        this.current.totalAttempts++; this.current.lastReviewTime = Date.now();
+        if(val === this.current.w.toLowerCase()) {
+            this.current.correctCount++;
+            if(this.current.sessionStep === 2) this.current.sessionStep = 3; 
+            else { 
+                const wasNew = !this.current.mastered; this.updateSM2(); this.current.sessionStep = 4; 
+                if (wasNew) { const d = new Date().toISOString().split('T')[0]; const key = `daily_new_count_${d}`; localStorage.setItem(key, (parseInt(localStorage.getItem(key)) || 0) + 1); }
+            }
+            this.next();
+        } else { this.current.sessionWrong = true; UI.alert("おっと！", `正解は [ ${this.current.w} ] です。`); this.current.sessionStep = 1; this.next(); }
+    },
+    updateSM2() {
+        const w = this.current;
+        if(w.sessionWrong) w.interval = 1;
+        else { if(!w.mastered) { w.interval = 1; w.mastered = true; } else { w.interval = w.interval <= 1 ? 3 : w.interval === 3 ? 7 : Math.ceil(w.interval * 2.2); } }
+        
+        // 【修正1】午夜重置邏輯
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + w.interval);
+        nextDate.setHours(0, 0, 0, 0); 
+        w.nextReview = nextDate.getTime();
+        App.save();
+    },
+    speakWord() { const u = new SpeechSynthesisUtterance(this.current.w); u.lang = 'en-US'; u.rate = 0.8; window.speechSynthesis.speak(u); },
+    quit() { Router.go('home'); }
 };
 
 const Pet = {
@@ -609,74 +683,6 @@ const UI = {
     }
 };
 
-const Game = {
-    queue: [], current: null, total: 0,
-    start() {
-        const now = Date.now(), d = new Date().toISOString().split('T')[0];
-        const dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${d}`) || 0);
-        let reviews = App.db.filter(w => !w.paused && w.mastered && w.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview).slice(0, App.dailyReviewLimit);
-        let news = []; const remaining = App.dailyNewLimit - dailyNewCount;
-        if (remaining > 0) news = App.db.filter(w => !w.paused && !w.mastered).sort(() => 0.5 - Math.random()).slice(0, remaining);
-        this.queue = [...reviews, ...news];
-        if(!this.queue.length) { UI.alert("完了！", "今日のタスクはありません。また明日！"); return; }
-        this.total = this.queue.length;
-        this.queue.forEach(w => { 
-            w.sessionStep = (w.totalAttempts > 0 || w.mastered) ? 3 : 1; 
-            w.sessionWrong = false; 
-        });
-        Router.go('game'); this.next();
-    },
-    next() {
-        const pending = this.queue.filter(w => w.sessionStep <= 3);
-        if(!pending.length) { Router.go('result'); return; }
-        this.current = pending[0];
-        document.getElementById('progress-text').innerText = (this.total - pending.length + 1) + " / " + this.total;
-        document.getElementById('progress-fill').style.width = ((this.total - pending.length + 1)/this.total * 100) + '%';
-        this.render();
-    },
-    render() {
-        const w = this.current, step = w.sessionStep, input = document.getElementById('game-input'), hint = document.getElementById('game-hint');
-        document.getElementById('game-meaning').innerText = w.m;
-        document.getElementById('game-word-tag').innerText = WORD_LEVELS[w.l];
-        document.getElementById('game-word-tag').className = `tag lvl-${w.l}`;
-        document.getElementById('step-label').innerText = `Step ${step}: ${step===1?"覚える":step===2?"穴埋め":"テスト"}`;
-        document.getElementById('ai-sentence-box').classList.remove('show');
-        document.getElementById('ai-sentence-btn').classList.toggle('hidden', step !== 1);
-        this.speakWord();
-        if(step === 1) {
-            hint.innerText = w.w; hint.classList.remove('hidden'); input.classList.add('hidden');
-            document.getElementById('action-area').innerHTML = `<button class="btn" onclick="Game.current.sessionStep=2; Game.next()">覚えた！</button>`;
-        } else {
-            hint.innerText = step === 2 ? w.w.replace(/[aeiou]/g, '_') : "";
-            hint.classList.toggle('hidden', step === 3);
-            input.classList.remove('hidden'); input.value = ''; 
-            input.readOnly = true; setTimeout(() => { input.readOnly = false; input.focus(); }, 250);
-            document.getElementById('action-area').innerHTML = `<button class="btn" onclick="Game.check()">チェック！</button>`;
-        }
-    },
-    check() {
-        const val = document.getElementById('game-input').value.trim().toLowerCase();
-        this.current.totalAttempts++; this.current.lastReviewTime = Date.now();
-        if(val === this.current.w.toLowerCase()) {
-            this.current.correctCount++;
-            if(this.current.sessionStep === 2) this.current.sessionStep = 3; 
-            else { 
-                const wasNew = !this.current.mastered; this.updateSM2(); this.current.sessionStep = 4; 
-                if (wasNew) { const d = new Date().toISOString().split('T')[0]; const key = `daily_new_count_${d}`; localStorage.setItem(key, (parseInt(localStorage.getItem(key)) || 0) + 1); }
-            }
-            this.next();
-        } else { this.current.sessionWrong = true; UI.alert("おっと！", `正解は [ ${this.current.w} ] です。`); this.current.sessionStep = 1; this.next(); }
-    },
-    updateSM2() {
-        const w = this.current;
-        if(w.sessionWrong) w.interval = 1;
-        else { if(!w.mastered) { w.interval = 1; w.mastered = true; } else { w.interval = w.interval <= 1 ? 3 : w.interval === 3 ? 7 : Math.ceil(w.interval * 2.2); } }
-        w.nextReview = Date.now() + (w.interval * 86400000); App.save();
-    },
-    speakWord() { const u = new SpeechSynthesisUtterance(this.current.w); u.lang = 'en-US'; u.rate = 0.8; window.speechSynthesis.speak(u); },
-    quit() { Router.go('home'); }
-};
-
 const Admin = {
     render() {
         document.getElementById('nickname-input').value = App.userNickname;
@@ -695,7 +701,6 @@ const Admin = {
                 <td>${acc}%</td>
                 <td>${next}</td>
                 <td>
-                    <!-- 修正：將按鈕改為橫向排列的 2x2 正方形佈局 -->
                     <div style="display:flex; flex-wrap:wrap; justify-content:center; width:64px; gap:2px;">
                         <button class="btn icon-btn outline" onclick="Admin.editItem('${w.w}')" title="編集">✏️</button>
                         <button class="btn icon-btn outline" onclick="Admin.togglePause('${w.w}')" title="${w.paused ? '再開' : '停止'}">${w.paused ? '▶️' : '⏸️'}</button>
@@ -719,22 +724,15 @@ const Admin = {
     },
     editItem(wordEn) {
         const word = App.db.find(w => w.w === wordEn);
-        if(!word) return;
-        const newEn = prompt("英語を編集:", word.w);
-        const newJp = prompt("意味を編集:", word.m);
-        if(newEn && newJp) {
-            word.w = newEn.trim(); word.m = newJp.trim(); App.save(); this.render(); UI.alert("成功", "更新しました");
+        if(word) {
+            const newEn = prompt("英語を編集:", word.w), newJp = prompt("意味を編集:", word.m);
+            if(newEn && newJp) { word.w = newEn.trim(); word.m = newJp.trim(); App.save(); this.render(); }
         }
     },
-    togglePause(wordEn) {
-        const word = App.db.find(w => w.w === wordEn);
-        if(word) { word.paused = !word.paused; App.save(); this.render(); UI.updateHome(); }
-    },
-    deleteItem(wordEn) {
-        if(confirm(`「${wordEn}」を削除しますか？`)) { App.db = App.db.filter(w => w.w !== wordEn); App.save(); this.render(); UI.updateHome(); }
-    },
+    togglePause(wordEn) { const word = App.db.find(w => w.w === wordEn); if(word) { word.paused = !word.paused; App.save(); this.render(); UI.updateHome(); } },
+    deleteItem(wordEn) { if(confirm(`「${wordEn}」を削除しますか？`)) { App.db = App.db.filter(w => w.w !== wordEn); App.save(); this.render(); UI.updateHome(); } },
     exportCSV() {
-        const dateObj = new Date(), todayStr = dateObj.toISOString().split('T')[0], streak = localStorage.getItem('streak') || 0;
+        const todayStr = new Date().toISOString().split('T')[0], streak = localStorage.getItem('streak') || 0;
         const headers = ["Date", "Streak", "Word", "Meaning", "Level", "Correct", "Attempts", "Accuracy", "Interval", "LastReview"];
         let csvRows = [headers.join(",")];
         App.db.forEach(w => {
@@ -743,11 +741,11 @@ const Admin = {
             csvRows.push([todayStr, streak, w.w, `"${w.m}"`, w.l, w.correctCount, w.totalAttempts, acc, w.interval, lastRevDate].join(","));
         });
         const blob = new Blob(["\ufeff" + csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.setAttribute("href", URL.createObjectURL(blob)); 
+        const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); 
         link.setAttribute("download", `study_report_${todayStr.replace(/-/g, '')}.csv`);
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
     },
+    // 【修正2】強制使用 UTF-8 讀取 CSV，解決中文亂碼問題
     processCSV(input) {
         const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
@@ -761,7 +759,7 @@ const Admin = {
             });
             App.save(); Admin.render(); UI.updateHome(); UI.alert("完了", "成功！");
         };
-        reader.readAsText(file);
+        reader.readAsText(file, "UTF-8"); 
     },
     resetItem(word) { const w = App.db.find(i => i.w === word); if(w) { Object.assign(w, {mastered: false, interval: 0, nextReview: 0, correctCount: 0, totalAttempts: 0}); App.save(); Admin.render(); } },
     resetAll() { UI.confirm("⚠️ 警告", "全データを消去しますか？", () => { localStorage.clear(); location.reload(); }); }
