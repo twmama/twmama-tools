@@ -149,15 +149,6 @@
         .word-item .word-en { font-family: 'Fredoka', sans-serif; font-size: 1.2rem; font-weight: bold; color: var(--primary); }
         .word-item .word-jp { font-size: 0.85rem; color: #888; margin-top: 2px; }
 
-        .admin-table-container {
-            width: 100%; overflow-y: auto; max-height: 40vh;
-            margin-bottom: 20px; border: 1px solid #eee; border-radius: 10px;
-        }
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; table-layout: fixed; }
-        th, td { padding: 8px 5px; text-align: left; border-bottom: 1px solid #eee; overflow: hidden; }
-        th { background: #f8f9fa; position: sticky; top: 0; z-index: 5; }
-        .accuracy-badge { font-size: 0.7rem; padding: 2px 4px; border-radius: 4px; background: #eee; }
-        
         .paused-row { opacity: 0.5; background: #fdfdfd; }
         .paused-tag { font-size: 0.65rem; color: #ff6b6b; font-weight: bold; }
 
@@ -217,7 +208,181 @@
             letter-spacing: 0.5px;
             line-height: 1.4;
         }
-    </style>
+
+        /* === AI 造句小老師專用 CSS === */
+        .sentence-block {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 8px 12px; border-radius: 10px; font-family: 'Fredoka', sans-serif;
+            font-size: 1.3rem; font-weight: bold; min-width: 40px; min-height: 30px;
+            background: #f1f2f6; color: var(--text); border: 2px solid #dfe4ea;
+            transition: all 0.3s ease; position: relative;
+        }
+        .sentence-block.blank {
+            background: transparent; border: none; border-bottom: 3px solid #a4b0be;
+            border-radius: 0; color: transparent;
+        }
+        .sentence-block.perfect {
+            background: var(--success); color: white; border-color: #10ac84;
+            box-shadow: 0 0 15px rgba(29, 209, 161, 0.6);
+            animation: glowSuccess 1s ease-in-out;
+        }
+        .sentence-block.error {
+            background: #feca57; color: #d35400; border-color: #ff9f43;
+            animation: floatError 1.5s infinite ease-in-out;
+            cursor: pointer;
+        }
+        .fix-block {
+            position: absolute; background: var(--ai-color); color: white;
+            padding: 5px 10px; border-radius: 8px; font-weight: bold; font-family: 'Fredoka', sans-serif;
+            cursor: pointer; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes floatError {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(2deg); }
+        }
+        @keyframes glowSuccess {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(29, 209, 161, 0); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(29, 209, 161, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 15px rgba(29, 209, 161, 0.6); }
+        }
+        .mic-active {
+            background: #ff6b6b !important; color: white !important; border-color: #ff6b6b !important;
+            animation: pulseMic 1.5s infinite;
+        }
+        @keyframes pulseMic {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 107, 107, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+        }
+
+/* === 単語帳 カード型UI & タブ === */
+.wb-tab {
+    background: #f1f2f6; border: 2px solid transparent; color: #576574;
+    padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;
+    white-space: nowrap; cursor: pointer; font-family: 'Zen Maru Gothic', sans-serif;
+    transition: all 0.15s;
+}
+.wb-tab.active { background: var(--accent); color: white; border-color: #2e86de; }
+
+/* 3カラムカード本体 */
+.wb-card {
+    display: grid;
+    grid-template-columns: 42% 35% 23%;
+    background: #fff;
+    border: 2px solid #f1f2f6;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    min-height: 72px;
+}
+/* word.active === false のとき薄くする */
+.wb-card.inactive-card { opacity: 0.45; }
+
+/* カラム1: 英単語 & 意味 */
+.wb-col-word {
+    padding: 10px 10px 10px 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 2px solid #f1f2f6;
+    min-width: 0;
+}
+.wb-col-word:active { background: #f8f9fa; }
+.wb-word-en {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.wb-word-jp {
+    font-size: 0.78rem;
+    color: #7f8c8d;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* カラム2: タグ & 統計 */
+.wb-col-stats {
+    padding: 8px 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    border-right: 2px solid #f1f2f6;
+}
+.wb-col-stats:active { background: #f8f9fa; }
+
+/* カテゴリタグ（既存の .tag .lvl-x を流用） */
+.wb-cat-tag {
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+/* 学習状態タグ */
+.wb-state-tag {
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    white-space: nowrap;
+}
+.wb-state-new     { background: #e3f2fd; color: #1565c0; }
+.wb-state-review  { background: #fff8e1; color: #e65100; }
+.wb-state-mastered{ background: #e8f5e9; color: #2e7d32; }
+
+/* コンパクト統計テキスト */
+.wb-stat-line {
+    font-size: 0.68rem;
+    color: #95a5a6;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* カラム3: 2×2 ボタングリッド */
+.wb-col-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 8px 6px;
+    align-content: center;
+    justify-items: center;
+}
+.wb-col-actions .btn.icon-btn {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    box-shadow: none;
+    border: 1px solid #ddd;
+    background: transparent;
+    color: #576574;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+.wb-col-actions .btn.icon-btn.danger {
+    border-color: #ffcdd2;
+    color: var(--danger);
+}
+.wb-col-actions .btn.icon-btn:active { background: #f1f2f6; }
+</style>
 </head>
 <body>
 
@@ -231,6 +396,7 @@
         <h1 class="app-title">AI単語マスター</h1>
         <div class="pet-container">
             <button class="btn small ai" style="position:absolute; right:10px; top:10px; border-radius:50%; width:40px; height:40px; font-size:1.2rem; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:10;" onclick="Gemini.openPetCoach()" title="ペット単語教室">🎓</button>
+            <button class="btn small" style="position:absolute; left:10px; top:10px; border-radius:50%; width:40px; height:40px; font-size:1.2rem; background:#ff7675; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:10; border:none; cursor:pointer;" onclick="PetSystem.openCakeBox()" title="ケーキをあげる">🍰</button>
             <div id="pet-speech" class="speech-bubble">タップしてね！</div>
             <div class="pet-emoji" id="pet-display" onclick="Pet.speak()">🥚</div>
             <p id="pet-name-display" style="font-weight:bold; margin-top:10px; color:#576574;">Lv.1 卵</p>
@@ -246,13 +412,26 @@
             </div>
         </div>
         <div class="menu-grid">
+            <div class="menu-item" onclick="Router.go('sentence'); SentenceGame.init(); SentenceGame.start();">
+                <div class="icon">✍️</div>
+                <div class="label">AI 文章コーチ</div>
+            </div>
+            <div class="menu-item" onclick="Router.go('bakery')">
+                <div class="icon">🍰</div>
+                <div class="label">魔法のパン屋</div>
+            </div>
+
             <div class="menu-item" onclick="Router.go('gallery')"><div class="icon">🦖</div><div class="label">進化図鑑</div></div>
             <div class="menu-item" onclick="Router.go('wordbook')"><div class="icon">📚</div><div class="label">単語帳</div></div>
-            <div class="menu-item" onclick="Gemini.generateStory('home')"><div class="icon">📖</div><div class="label">今日の物語</div></div>
+            
+            <div class="menu-item" onclick="Router.go('result'); UI.renderStory();"><div class="icon">📖</div><div class="label">今日の物語</div></div>
             <div class="menu-item" onclick="Router.go('admin')"><div class="icon">⚙️</div><div class="label">管理＆設定</div></div>
+            
+            <div class="menu-item" onclick="Game.start()" style="background: var(--primary); border-color: #e67e22; grid-column: span 2;">
+                <div class="icon">🚀</div>
+                <div class="label" style="color: white; font-size: 1.1rem;">トレーニング開始！</div>
+            </div>
         </div>
-        <div id="home-ai-box" class="ai-box"><div id="home-ai-content" style="max-height: 150px; overflow-y: auto; line-height: 1.8;"></div></div>
-        <button class="btn" style="margin-top: 20px;" onclick="Game.start()">🚀 トレーニング開始！</button>
     </div>
 
     <div id="screen-game" class="screen">
@@ -275,12 +454,56 @@
     </div>
 
     <div id="screen-result" class="screen">
-        <div style="text-align:center; margin-top:20px;"><div style="font-size:4rem;">🎉</div><h2>お疲れ様でした！</h2><p>今日のメニューはすべて終了です！</p></div>
-        <div id="result-ai-container" style="width:100%; margin-top:20px;">
-            <button class="btn ai" onclick="Gemini.generateStory('result')">📖 今日の物語を読む</button>
-            <div id="result-ai-box" class="ai-box"><div id="result-ai-content" style="line-height: 1.8;"></div></div>
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2>📖 今日の物語</h2>
+            <button onclick="Router.go('home')" class="btn small outline">戻る</button>
         </div>
-        <button class="btn" style="margin-top:auto;" onclick="Router.go('home')">ホームへ戻る</button>
+        <div id="story-content" class="flashcard" style="width:100%; box-sizing:border-box; padding:20px 15px; text-align:left; line-height:1.8; font-size:1.1rem; min-height: 200px;">
+            まだ物語がありません。下のボタンを押して新しい物語を作ってね！
+        </div>
+        <div style="width:100%; margin-top:20px;">
+            <button class="btn ai" style="width:100%; font-size:1.1rem;" onclick="Gemini.generateStory('manual')">🔄 新しい物語を作る (AI生成)</button>
+        </div>
+    </div>
+
+    <!-- === AI 造句小老師畫面 === -->
+    <div id="screen-sentence" class="screen">
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2>✍️ AI 文章コーチ</h2>
+            <button onclick="Router.go('home')" class="btn small outline">戻る</button>
+        </div>
+        <div style="width:100%; background:#e3f2fd; border:2px dashed #90caf9; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box; text-align:left;">
+            <div style="font-size:0.9rem; color:#1565c0; line-height:1.5; font-weight:bold;">
+                💡 遊び方：キーボードのマイク🎤を使って、英語を話してみよう！AIが魔法でチェックするよ。クリアすると魔法の食材がもらえるかも？ C級からSS級まで全クリを目指そう！
+            </div>
+        </div>
+        
+        <div style="width:100%; display:flex; justify-content:space-between; margin-bottom: 15px; align-items:center;">
+            <span class="tag lvl-2" id="sentence-lvl-badge" style="font-size:0.9rem; padding:4px 10px;">Lv.1 穴埋め</span>
+            <span style="font-weight:bold; color:var(--primary); font-size:1.2rem;">⭐ <span id="sentence-streak">0</span></span>
+        </div>
+
+        <div class="flashcard" style="width:100%; box-sizing:border-box; padding:20px 15px;">
+            <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:20px;">
+                <button id="sentence-tts-btn" class="btn icon-btn" style="width:40px; height:40px; border-radius:50%; font-size:1.2rem; flex-shrink:0;">🔊</button>
+                <div id="sentence-prompt-jp" style="font-size:1.1rem; font-weight:bold; color:#555; line-height:1.4; padding-top:8px;">
+                    (日文題目準備中...)
+                </div>
+            </div>
+
+            <div id="sentence-blocks-area" style="min-height: 60px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin-bottom: 25px; position:relative;">
+            </div>
+            
+            <div style="display:flex; gap:10px; width:100%; align-items:center;">
+                <textarea id="sentence-input" placeholder="ここに入力してね..." style="width:100%; font-size:1.2rem; padding:12px; border-radius:12px; border:2px solid #ddd; outline:none; font-family:'Fredoka', sans-serif; resize:none;" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div style="width:100%; margin-top:20px;">
+            <button id="sentence-check-btn" class="btn ai" style="width:100%; font-size:1.2rem;">✨ AI 魔法チェック</button>
+        </div>
+
+        <div id="sentence-ai-feedback" class="ai-box" style="width:100%; box-sizing:border-box; margin-top:15px;"></div>
     </div>
 
     <div id="screen-gallery" class="screen">
@@ -288,58 +511,154 @@
         <div class="gallery-grid" id="gallery-container"></div>
     </div>
 
+    <!-- ===== 単語帳（リファクタリング済み） ===== -->
     <div id="screen-wordbook" class="screen">
-        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><h2>📚 単語帳</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
-        <div style="width:100%; overflow-y: auto; flex:1;"><div class="word-list" id="wordbook-container"></div></div>
-    </div>
-
-    <div id="screen-admin" class="screen">
-        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h2>⚙️ 管理＆設定</h2><button onclick="Router.go('home')" class="btn small outline">戻る</button></div>
-        
-        <div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
-            <div style="font-weight:bold; margin-bottom:5px;">👦 你的名字 (Nickname)</div>
-            <input type="text" id="nickname-input" class="admin-input" style="border:1px solid #ddd; border-radius:8px;" placeholder="例: Da-bao">
-            <button class="btn small" style="margin-top:8px; width:100%; background:#a55eea; box-shadow:0 3px 0 #8854d0;" onclick="Admin.saveNickname()">名字を保存</button>
+        <!-- ヘッダー -->
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2>📚 単語帳</h2>
+            <button onclick="Router.go('home')" class="btn small outline">戻る</button>
         </div>
 
-        <div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
-            <div style="font-weight:bold; margin-bottom:10px;">⚡ 每日任務量設定</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><label style="font-size:0.9rem;">🆕 新規単語 (New):</label><input type="number" id="limit-new" class="admin-input" style="width:80px; text-align:center; padding:5px;" min="0"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><label style="font-size:0.9rem;">🔄 復習単語 (Review):</label><input type="number" id="limit-review" class="admin-input" style="width:80px; text-align:center; padding:5px;" min="0"></div>
-            <button class="btn small" style="width:100%; background:#2ecc71; box-shadow:0 3px 0 #27ae60;" onclick="Admin.saveLimits()">設定を保存</button>
-        </div>
+<!-- アクションバー -->
+<div style="width:100%; display:flex; gap:8px; margin-bottom:12px;">
+    <button class="btn small" style="flex:1; background:#1dd1a1; box-shadow:0 3px 0 #10ac84; font-size:0.78rem;" onclick="Wordbook.toggleAddForm()">➕ 単語を追加</button>
+    <button class="btn small" style="flex:1; background:#2196f3; box-shadow:0 3px 0 #1976d2; font-size:0.78rem;" onclick="document.getElementById('wb-csv-input').click()">📂 CSV 読込</button>
+    <button class="btn small" style="flex:1; background:#ff9f43; box-shadow:0 3px 0 #e67e22; font-size:0.78rem;" onclick="Admin.exportCSV()">📊 記録出力</button>
+    <input type="file" id="wb-csv-input" accept=".csv" style="display:none" onchange="Admin.processCSV(this)">
+</div>
 
-        <div style="width:100%; background:#f8f9fa; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
-            <div style="font-weight:bold; margin-bottom:5px;">🔍 APIキー設定 (Gemini)</div>
-            <input type="text" id="api-key-input" placeholder="貼り付けしてください" class="admin-input" style="border:1px solid #ddd; border-radius:8px; font-family: monospace;">
-            <button class="btn small ai" style="margin-top:8px; width:100%;" onclick="Admin.saveApiKey()">APIキーを保存</button>
-        </div>
-        
-        <div style="width:100%; background:#fff3e0; padding:12px; border-radius:15px; border:1px solid #ffe0b2; margin-bottom:15px; box-sizing:border-box;">
-            <div style="font-weight:bold; margin-bottom:5px;">➕ 単語追加</div>
-            <input type="text" id="add-en" placeholder="英語" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;"><input type="text" id="add-jp" placeholder="意味" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
-            <select id="add-lvl" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
+        <!-- 単語追加フォーム（開閉式） -->
+        <div id="wb-add-form" style="display:none; width:100%; background:#fff3e0; border:2px dashed #ffb74d; border-radius:15px; padding:12px; margin-bottom:12px; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:8px; color:#e67e22;">➕ 新しい単語を追加</div>
+            <input type="text" id="wb-add-en" placeholder="英語 (例: apple)" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:6px;">
+            <input type="text" id="wb-add-jp" placeholder="意味 (例: りんご)" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:6px;">
+            <select id="wb-add-lvl" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:8px;">
                 <option value="1">必須単語</option>
                 <option value="2">頻出単語</option>
                 <option value="3">上級単語</option>
             </select>
-            <button class="btn small" style="margin-top:8px; width:100%;" onclick="Admin.add()">リストに追加</button>
+            <div style="display:flex; gap:8px;">
+                <button class="btn small" style="flex:1; background:#1dd1a1; box-shadow:0 3px 0 #10ac84;" onclick="Admin.addWord()">追加する</button>
+                <button class="btn small outline" style="flex:1;" onclick="Wordbook.toggleAddForm()">キャンセル</button>
+            </div>
         </div>
 
-        <div style="width:100%; background:#e3f2fd; padding:15px; border-radius:15px; border:2px solid #2196f3; margin-bottom:15px; box-sizing:border-box;">
-            <div style="font-weight:bold; margin-bottom:8px; color:#1976d2; font-size:1rem;">📂 大量匯入 (CSV)</div>
-            <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="Admin.processCSV(this)"><button class="btn small" style="width:100%; background:#2196f3; box-shadow:0 4px 0 #1976d2;" onclick="document.getElementById('csv-file-input').click()">📂 選擇 CSV 檔案匯入</button>
+        <!-- フィルタータブ -->
+        <div style="width:100%; display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;">
+            <select id="filter-category" class="admin-input" style="flex:1; border:1px solid #ddd; border-radius:8px; padding:8px; font-size:0.85rem;" onchange="Wordbook.setFilter()">
+                <option value="all">すべてのカテゴリ</option>
+                <option value="1">必須単語</option>
+                <option value="2">頻出単語</option>
+                <option value="3">上級単語</option>
+            </select>
+            <select id="filter-status" class="admin-input" style="flex:1; border:1px solid #ddd; border-radius:8px; padding:8px; font-size:0.85rem;" onchange="Wordbook.setFilter()">
+                <option value="all">すべての状態</option>
+                <option value="new">🌱 新規</option>
+                <option value="review">🔄 復習中</option>
+                <option value="mastered">✅ 習得済み</option>
+            </select>
         </div>
-        <div class="admin-table-container"><table id="admin-table"></table></div>
-        <div style="width:100%; display:flex; flex-direction:column; gap:10px;">
-            <button class="btn green" onclick="Admin.exportCSV()">📊 學習數據匯出 (CSV)</button>
-            <div style="text-align:center;"><button class="btn outline small" onclick="Admin.resetAll()" style="color:var(--danger); border-color:var(--danger); width:100%;">⚠️ 全データをリセット</button></div>
+
+        <!-- 単語カードリスト -->
+        <div style="width:100%; overflow-y:auto; flex:1;">
+            <div id="wordbook-container" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+    </div>
+
+    <!-- === 魔法のパン屋 畫面 === -->
+    <div id="screen-bakery" class="screen">
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2>🍰 魔法のパン屋</h2>
+            <button onclick="Router.go('home')" class="btn small outline">戻る</button>
+        </div>
+        
+        <div class="flashcard" style="width:100%; box-sizing:border-box; padding:15px; text-align:center;">
+            <div style="background:#f1f2f6; border-radius:15px; padding:15px; min-height:80px; margin-bottom:15px; border:2px dashed #a4b0be;">
+                <div style="font-weight:bold; color:#576574; margin-bottom:10px;">🥣 ボウルの中身 (タップで戻す)</div>
+                <div id="bakery-bowl" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; min-height:50px; align-items:center;"></div>
+            </div>
+
+            <button class="btn ai" style="width:100%; font-size:1.2rem; margin-bottom:20px;" onclick="BakerySystem.bake()">✨ 合成する (Bake!)</button>
+
+            <h3 style="color:var(--primary); margin-bottom:10px; font-size:1.1rem;">❄️ 冷蔵庫 (タップで入れる)</h3>
+            <div id="bakery-inventory" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;"></div>
+        </div>
+    </div>
+
+    <!-- ===== 管理＆設定（システム設定のみ・スッキリ版） ===== -->
+    <div id="screen-admin" class="screen">
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2>⚙️ システム設定</h2>
+            <button onclick="Router.go('home')" class="btn small outline">戻る</button>
+        </div>
+
+        <!-- ニックネーム -->
+        <div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:5px;">👦 ニックネーム</div>
+            <input type="text" id="nickname-input" class="admin-input" style="border:1px solid #ddd; border-radius:8px;" placeholder="例: Da-bao">
+            <button class="btn small" style="margin-top:8px; width:100%; background:#a55eea; box-shadow:0 3px 0 #8854d0;" onclick="Admin.saveNickname()">名前を保存</button>
+        </div>
+
+        <!-- 文章コーチレベル -->
+        <div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:5px;">✍️ 文章コーチのレベル (強制変更)</div>
+            <select id="admin-sentence-lvl" class="admin-input" style="border:1px solid #ddd; border-radius:8px; margin-bottom:5px;">
+                <option value="1">C級 (穴埋め)</option>
+                <option value="2">B級 (アシスト作文)</option>
+                <option value="3">A級 (1文マスター)</option>
+                <option value="4">S級 (意見エキスパート)</option>
+                <option value="5">SS級 (英検ボス討伐)</option>
+            </select>
+            <button class="btn small" style="margin-top:8px; width:100%; background:#f39c12; box-shadow:0 3px 0 #d35400;" onclick="Admin.saveSentenceLevel()">レベルを保存</button>
+        </div><div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:5px;">📊 學習數據 (NotebookLM 專用)</div>
+            <p style="font-size:0.8rem; color:#666; margin-top:0; margin-bottom:10px;">系統自動保留最新的 100 筆造句紀錄。請定期匯出並交給 AI 分析。</p>
+            <div style="display:flex; gap:10px;">
+                <button class="btn small" style="flex:1; background:#0984e3; box-shadow:0 3px 0 #0abde3;" onclick="Admin.exportSentences()">📥 紀錄匯出</button>
+                <button class="btn small" style="flex:1; background:#ff7675; box-shadow:0 3px 0 #d63031;" onclick="Admin.clearSentences()">🗑️ 清空紀錄</button>
+            </div>
+        </div>
+
+        <!-- 毎日の出題数 -->
+        <div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:10px;">⚡ 毎日の出題数設定</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <label style="font-size:0.9rem;">🆕 新規単語 (New):</label>
+                <input type="number" id="limit-new" class="admin-input" style="width:80px; text-align:center; padding:5px;" min="0">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <label style="font-size:0.9rem;">🔄 復習単語 (Review):</label>
+                <input type="number" id="limit-review" class="admin-input" style="width:80px; text-align:center; padding:5px;" min="0">
+            </div>
+            <button class="btn small" style="width:100%; background:#2ecc71; box-shadow:0 3px 0 #27ae60;" onclick="Admin.saveLimits()">設定を保存</button>
+        </div>
+
+        <!-- APIキー -->
+        <div style="width:100%; background:#f8f9fa; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:5px;">🔑 Gemini APIキー</div>
+            <input type="text" id="api-key-input" placeholder="貼り付けしてください" class="admin-input" style="border:1px solid #ddd; border-radius:8px; font-family:monospace;">
+            <button class="btn small ai" style="margin-top:8px; width:100%;" onclick="Admin.saveApiKey()">APIキーを保存</button>
+        </div>
+
+        <!-- データリセット -->
+        <div style="width:100%; padding-top:5px; padding-bottom:20px;">
+            <button class="btn outline small" onclick="Admin.resetAll()" style="color:var(--danger); border-color:var(--danger); width:100%;">⚠️ 全データをリセット</button>
         </div>
     </div>
 
     <footer class="app-footer">2025 台媽日爸樂共讀© │ twmamareads All Rights Reserved.</footer>
 
-    <!-- Modal -->
+    <!-- Cake Modal -->
+    <div id="cake-modal" class="modal-overlay">
+        <div class="modal-box" style="background: #fff0f5; border: 3px solid #ffb8b8;">
+            <div style="font-size: 2rem; margin-bottom: 10px;">🍰</div>
+            <div style="font-weight:bold; font-size:1.2rem; color:#d63031; margin-bottom:15px;">ケーキボックス</div>
+            <div id="cake-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; margin-bottom: 15px;"></div>
+            <button class="btn outline small" style="width: 100%; background: white;" onclick="document.getElementById('cake-modal').classList.remove('show')">閉じる</button>
+        </div>
+    </div>
+
+    <!-- General Modal -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-msg" style="margin-bottom:15px; white-space:pre-wrap; font-weight:bold; font-size:1.1rem; color:var(--primary);"></div>
@@ -364,19 +683,23 @@ const PET_DATA = [
     { t: 100, e: "🦜", n: "おしゃべりオウム", desc: "英語が大好きで、覚えた言葉をすぐに使いたがる。", persona: "あなたは『陽気なオウム』です。テンションが高く、英語交じりのルー大柴のような話し方をします。「Hello!」「Wow!」などを頻繁に使います。", s: ["Hello! {name}、調子はどう？", "Nice to meet you!", "英語大好き！"] },
     { t: 150, e: "🦉", n: "知恵のフクロウ", desc: "森の賢者。物知りで、夜になると活發になる。", persona: "あなたは『老成したフクロウ博士』です。落ち着いていて、知的な話し方をします。「〜じゃ」「〜だのう」という博士口調で、語尾は「ホウ」です。", s: ["勉強熱心じゃのう", "夜は読書に限るホウ", "知恵こそ力じゃ、{name}"] },
     { t: 220, e: "🦅", n: "ハヤブサ", desc: "空のスピードスター. 目標に向かって一直線に飛ぶ。", persona: "あなたは『クールなハヤブサ』です。無駄口を叩かず、キザでカッコいい兄貴分です。スピード感のある短い文章で話します。語尾は「ぜ」。", s: ["遅れるなよ、{name}？", "風を切って進むぜ", "狙った獲物は逃さない"] },
-    { t: 300, e: "🦢", n: "優雅な白鳥", desc: "湖の貴族。常に美しくあることを意識している。", persona: "あなたは『優雅な白鳥』です。丁寧語やお嬢様言葉（〜ですわ、〜ますの）を使います。美意識が高く、上品な振る舞いを好みます。", s: ["ごきげんよう、{name}", "優雅に泳ぎましょう", "美しい言葉ですわね"] },
-    { t: 400, e: "🦖", n: "わんぱく恐竜", desc: "力が強くて少し乱暴だけど、実は優しい心の持ち主。", persona: "あなたは『元気なティラノサウルス』です。ガキ大將のような性格で、聲が大きいです。語尾に「ガオ！」「だゾ！」を付けます。", s: ["腹減ったガオ！", "肉食いたいゾ, {name}！", "強くなるんだガオ！"] },
-    { t: 550, e: "🦕", n: "首長竜", desc: "長い首で遠くを見渡す. とても気が長くて穏やか。", persona: "あなたは『のんびり屋の首長竜』です。話すのがとてもゆっくりで、間延びした口調です。「〜だねぇ」「〜だよぉ」と話します。", s: ["いい天気だねぇ、{name}", "草がおいしいよぉ...", "急がなくていいよぉ"] },
-    { t: 750, e: "🐊", n: "古代ワニ", desc: "水辺のガーディアン. 一度噛み付いたら離さない集中力。", persona: "あなたは『ハードボイルドなワニ』です。聲が低く、渋い性格です。粘り強さや集中力を重視します。語尾は「ギザ」或者「だ」。", s: ["集中しろ、{name}...", "チャンスを待つんだ", "俺のキバは鋭いギザ"] },
-    { t: 950, e: "🐉", n: "飛竜ワイバーン", desc: "天空の支配者. 嵐の中でも自由に飛び回る。", persona: "あなたは『誇り高き飛竜』です。自信滿々で、勇者（ユーザー）を認める相棒のような存在です。「我」「貴様（親愛を込めて）」などを使います。語尾は「ギャオ！」", s: ["馬鹿め！我の背に乗れ！", "風など恐れぬ！", "貴様ならできるギャオ！"] },
-    { t: 1100, e: "🐲", n: "伝説の龍", desc: "古の時代から生きる伝説. その言葉には重みがある。", persona: "あなたは『神話の龍』です。古風で威厳のある話し方（〜であろう、〜せよ）をします。ユーザーを「勇者よ」と呼びます。", s: ["よくぞ參った、勇者{name}", "道は開かれた", "汝の力を示せ"] },
-    { t: 1200, e: "🦄", n: "聖なる守護神", desc: "奇跡を呼ぶ存在. 純粋な心を持つ者の前にだけ現れる。", persona: "あなたは『神秘的なユニコーン』です。敬語で、聖職者のように穏やかで慈愛に滿ちた話し方をします。「〜ですね」「光あれ」などが特徴です。", s: ["光が導くでしょう", "恐れることはありません", "{name}、奇跡を信じなさい"] },
-    { t: 1300, e: "🔥", n: "不死鳥フェニックス", desc: "永遠の炎をまとう bird. 何度でも蘇る不屈の精神の象徴。", persona: "あなたは『熱血の不死鳥』です。松岡修造のように超ポジティブで熱苦しい性格です！「燃えろ！」「諦めるな！」が口癖です。", s: ["燃え上がれ！！{name}！", "君の情熱を感じるぞ！", "ネバーギブアップ！！"] }
+    { t: 300, e: "🦢", n: "優雅な白鳥", desc: "湖の貴族。常に美しくあることを意識している。", persona: "あなたは『優雅な白鳥』です。丁寧語やお嬢様言葉を使います。", s: ["ごきげんよう、{name}", "優雅に泳ぎましょう", "美しい言葉ですわね"] },
+    { t: 400, e: "🦖", n: "わんぱく恐竜", desc: "力が強くて少し乱暴だけど、実は優しい心の持ち主。", persona: "あなたは『元気なティラノサウルス』です。ガキ大将のような性格です。語尾に「ガオ！」を付けます。", s: ["腹減ったガオ！", "肉食いたいガオ！", "強くなるんだガオ！"] },
+    { t: 550, e: "🐢", n: "古代亀アーケロン", desc: "海を渡る巨大な亀。何百年も生きている長老。", persona: "あなたは『海の長老アーケロン』です。とてもゆっくり話し、穏やかな性格です。語尾は「〜じゃのう」です。", s: ["ゆっくり進むのじゃ...", "海の波は心地よいのう", "焦らなくていいんじゃよ"] },
+    { t: 700, e: "🐊", n: "古代ワニ", desc: "水辺のガーディアン。一度噛み付いたら離さない。", persona: "あなたは『ハードボイルドなワニ』です。声が低く、渋い性格です。語尾は「だぜ」や「ギザ」。", s: ["集中しろ、{name}...", "チャンスを待つんだ", "俺の牙は鋭いギザ"] },
+    { t: 850, e: "🦎", n: "疾風のラプトル", desc: "風のように素早いハンター。群れで行動するのが得意。", persona: "あなたは『忍者みたいに素早いラプトル』です。せっかちで自信家です。「シュッ！」という効果音を使います。", s: ["遅い遅い！シュッ！", "俺のスピードについてこれるか？", "油断するなよ！"] },
+    { t: 1000, e: "🐍", n: "深海の海竜", desc: "海の底に潜む巨大な海竜。ミステリアスな雰囲気を持つ。", persona: "あなたは『ミステリアスな海竜』です。静かに囁くように話します。語尾は「〜シャ」です。", s: ["深き海の底へようこそ...", "私の目は誤魔化せないシャ...", "静寂が一番だシャ..."] },
+    { t: 1150, e: "🦕", n: "首長竜", desc: "長い首で遠くを見渡す。とても気が長くて穏やか。", persona: "あなたは『のんびり屋の首長竜』です。話すのがとてもゆっくりで、間延びした口調です。", s: ["いい天気だねぇ、{name}", "草がおいしいよぉ...", "遠くまで見えるねぇ"] },
+    { t: 1300, e: "🐉", n: "飛竜ワイバーン", desc: "天空の支配者。嵐の中でも自由に飛び回る。", persona: "あなたは『誇り高き飛竜』です。自信満々で、ユーザーを認める相棒です。語尾は「ギャオ！」", s: ["我の背に乗れ！", "風など恐れぬ！", "貴様ならできるギャオ！"] },
+    { t: 1550, e: "🐲", n: "伝説の龍", desc: "古の時代から生きる伝説。その言葉には重みがある。", persona: "あなたは『神話の龍』です。古風で威厳のある話し方をします。", s: ["よくぞ参った、勇者{name}", "道は開かれた", "汝の力を示せ"] },
+    { t: 1800, e: "🦄", n: "聖なる守護神", desc: "奇跡を呼ぶ存在。純粋な心を持つ者の前にだけ現れる。", persona: "あなたは『神秘的なユニコーン』です。敬語で、穏やかで慈愛に満ちた話し方をします。", s: ["光が導くでしょう", "恐れることはありません", "{name}、奇跡を信じなさい"] },
+    { t: 2100, e: "🔥", n: "不死鳥フェニックス", desc: "永遠の炎をまとう鳥。何度でも蘇る不屈の精神の象徴。", persona: "あなたは『熱血の不死鳥』です。超ポジティブで熱苦しい性格です！", s: ["燃え上がれ！！{name}！", "君の情熱を感じるぞ！", "ネバーギブアップ！！"] },
+    { t: 2500, e: "🌌", n: "宇宙ドラゴン", desc: "星々の間を泳ぐ究極の生命体。宇宙の真理を知っている。", persona: "あなたは『全知全能の宇宙ドラゴン』です。エコーがかかったような、壮大で哲学的な口調で話します。", s: ["星の瞬きを感じるか...", "限界など存在しないのだ", "我々は宇宙の一部に過ぎない..."] }
 ];
 
 const COMMON_SPEECHES = ["{name}、大好きだよ！", "よくできました！", "一緒に頑張ろう！", "英語って楽しいね、{name}！", "天才じゃない！？", "キラキラしてるね！"];
 
-const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},{w:"plan",m:"計画",l:1},{w:"enjoy",m:"楽しむ",l:1},{w:"library",m:"図書館",l:1},{w:"visit",m:"訪れる",l:1},{w:"because",m:"なぜなら",l:1},{w:"weather",m:"天気",l:1},{w:"friend",m:"友達",l:1},{w:"school",m:"学校",l:1},{w:"student",m:"生徒",l:1},{w:"family",m:"家族",l:1},{w:"house",m:"家",l:1},{w:"room",m:"部屋",l:1},{w:"study",m:"勉強する",l:1},{w:"play",m:"遊ぶ/弾く",l:1},{w:"watch",m:"見る",l:1},{w:"cook",m:"料理する",l:1},{w:"make",m:"作る",l:1},{w:"buy",m:"買う",l:1},{w:"want",m:"欲しい",l:1},{w:"like",m:"好き",l:1},{w:"have",m:"持っている",l:1},{w:"go",m:"行く",l:1},{w:"come",m:"来る",l:1},{w:"see",m:"會う/見る",l:1},{w:"eat",m:"食べる",l:1},{w:"give",m:"與える",l:1},{w:"take",m:"取る/連れて行く",l:1},{w:"help",m:"助ける",l:1},{w:"know",m:"知っている",l:1},{w:"think",m:"思う",l:1},{w:"say",m:"言う",l:1},{w:"look",m:"見る",l:1},{w:"use",m:"使う",l:1},{w:"find",m:"見つける",l:1},{w:"need",m:"必要とする",l:1},{w:"work",m:"働く",l:1},{w:"try",m:"試す",l:1},{w:"ask",m:"尋ねる",l:1},{w:"talk",m:"話す",l:1},{w:"start",m:"始める",l:1},{w:"finish",m:"終える",l:1},{w:"live",m:"住む",l:1},{w:"stay",m:"滯在する",l:1},{w:"move",m:"動く/引っ越す",l:1},{w:"walk",m:"歩く",l:1},{w:"run",m:"走る",l:1},{w:"read",m:"読む",l:1},{w:"write",m:"書く",l:1},{w:"speak",m:"話す",l:1},{w:"listen",m:"聞く",l:1},{w:"open",m:"開ける",l:1},{w:"close",m:"閉める",l:1},{w:"happy",m:"幸せな",l:1},{w:"sad",m:"悲しい",l:1},{w:"angry",m:"怒った",l:1},{w:"tired",m:"疲れた",l:1},{w:"hungry",m:"空腹の",l:1},{w:"thirsty",m:"喉が渇いた",l:1},{w:"good",m:"良い",l:1},{w:"bad",m:"悪い",l:1},{w:"big",m:"大きい",l:1},{w:"small",m:"小さい",l:1},{w:"long",m:"長い",l:1},{w:"short",m:"短い",l:1},{w:"new",m:"新しい",l:1},{w:"old",m:"古い",l:1},{w:"hot",m:"暑い",l:1},{w:"cold",m:"寒い",l:1},{w:"warm",m:"暖かい",l:1},{w:"cool",m:"涼しい",l:1},{w:"fast",m:"速い",l:1},{w:"slow",m:"遅い",l:1},{w:"easy",m:"簡単な",l:1},{w:"difficult",m:"難しい",l:1},{w:"interesting",m:"面白い",l:1},{w:"boring",m:"退屈な",l:1},{w:"fun",m:"楽しい",l:1},{w:"busy",m:"忙しい",l:1},{w:"free",m:"暇な/自由な",l:1},{w:"favorite",m:"一番好きな",l:1},{w:"popular",m:"人気のある",l:1},{w:"important",m:"重要な",l:1},{w:"beautiful",m:"美しい",l:1},{w:"famous",m:"有名な",l:1},{w:"kind",m:"親切な",l:1},{w:"time",m:"時間",l:1},{w:"day",m:"日",l:1},{w:"week",m:"週",l:1},{w:"month",m:"月",l:1},{w:"year",m:"年",l:1},{w:"morning",m:"朝",l:1},{w:"afternoon",m:"午後",l:1},{w:"evening",m:"夕方",l:1},{w:"night",m:"夜",l:1},{w:"today",m:"今日",l:1},{w:"tomorrow",m:"明日",l:1},{w:"yesterday",m:"昨日",l:1},{w:"summer",m:"夏",l:1},{w:"winter",m:"冬",l:1},{w:"spring",m:"春",l:1},{w:"fall",m:"秋",l:1},{w:"vacation",m:"休暇",l:1},{w:"holiday",m:"休日",l:1},{w:"breakfast",m:"朝食",l:1},{w:"lunch",m:"晝食",l:1},{w:"dinner",m:"夕食",l:1},{w:"food",m:"食べ物",l:1},{w:"water",m:"水",l:1},{w:"book",m:"本",l:1},{w:"pen",m:"ペン",l:1},{w:"computer",m:"コンピュータ",l:1},{w:"phone",m:"電話",l:1},{w:"money",m:"お金",l:1},{w:"bag",m:"鞄",l:1},{w:"clothes",m:"服",l:1},{w:"car",m:"車",l:1},{w:"bus",m:"バス",l:1},{w:"train",m:"電車",l:1},{w:"bike",m:"自転車",l:1},{w:"city",m:"都市",l:1},{w:"park",m:"公園",l:1},{w:"hospital",m:"病院",l:1},{w:"station",m:"駅",l:1},{w:"restaurant",m:"レストラン",l:1},{w:"museum",m:"博物館",l:1},{w:"idea",m:"考え",l:1},{w:"problem",m:"問題",l:1},{w:"question",m:"質問",l:1},{w:"answer",m:"答え",l:1},{w:"story",m:"物語",l:1},{w:"letter",m:"手紙",l:1},{w:"picture",m:"寫真",l:1},{w:"music",m:"音樂",l:1},{w:"movie",m:"映画",l:1},{w:"sport",m:"スポーツ",l:1},{w:"game",m:"ゲーム",l:1},{w:"art",m:"芸術",l:1},{w:"history",m:"歴史",l:1},{w:"science",m:"科學",l:1},{w:"math",m:"數學",l:1},{w:"English",m:"英語",l:1},{w:"Japanese",m:"日本語",l:1},{w:"animal",m:"動物",l:1},{w:"dog",m:"犬",l:1},{w:"cat",m:"貓",l:1},{w:"bird",m:"鳥",l:1},{w:"fish",m:"魚",l:1},{w:"flower",m:"花",l:1},{w:"tree",m:"木",l:1},{w:"river",m:"川",l:1},{w:"sea",m:"海",l:1},{w:"mountain",m:"山",l:1},{w:"sky",m:"空",l:1},{w:"sun",m:"太陽",l:1},{w:"moon",m:"月",l:1},{w:"star",m:"星",l:1},{w:"rain",m:"雨",l:1},{w:"snow",m:"雪",l:1},{w:"wind",m:"風",l:1},{w:"cloud",m:"雲",l:1}];
+const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},{w:"plan",m:"計画",l:1},{w:"enjoy",m:"楽しむ",l:1},{w:"library",m:"図書館",l:1},{w:"visit",m:"訪れる",l:1},{w:"because",m:"なぜなら",l:1},{w:"weather",m:"天気",l:1},{w:"friend",m:"友達",l:1},{w:"school",m:"学校",l:1},{w:"student",m:"生徒",l:1},{w:"family",m:"家族",l:1},{w:"house",m:"家",l:1},{w:"room",m:"部屋",l:1},{w:"study",m:"勉強する",l:1},{w:"play",m:"遊ぶ/弾く",l:1},{w:"watch",m:"見る",l:1},{w:"cook",m:"料理する",l:1},{w:"make",m:"作る",l:1},{w:"buy",m:"買う",l:1},{w:"want",m:"欲しい",l:1},{w:"like",m:"好き",l:1},{w:"have",m:"持っている",l:1},{w:"go",m:"行く",l:1},{w:"come",m:"来る",l:1},{w:"see",m:"會う/見る",l:1},{w:"eat",m:"食べる",l:1},{w:"give",m:"與える",l:1},{w:"take",m:"取る/連れて行く",l:1},{w:"help",m:"助ける",l:1},{w:"know",m:"知っている",l:1},{w:"think",m:"思う",l:1},{w:"say",m:"言う",l:1},{w:"look",m:"見る",l:1},{w:"use",m:"使う",l:1},{w:"find",m:"見つける",l:1},{w:"need",m:"必要とする",l:1},{w:"work",m:"働く",l:1},{w:"try",m:"試す",l:1},{w:"ask",m:"尋ねる",l:1},{w:"talk",m:"話す",l:1},{w:"start",m:"始める",l:1},{w:"finish",m:"終える",l:1},{w:"live",m:"住む",l:1},{w:"stay",m:"滯在する",l:1},{w:"move",m:"動く/引っ越す",l:1},{w:"walk",m:"歩く",l:1},{w:"run",m:"走る",l:1},{w:"read",m:"読む",l:1},{w:"write",m:"書く",l:1},{w:"speak",m:"話す",l:1},{w:"listen",m:"聞く",l:1},{w:"open",m:"開ける",l:1},{w:"close",m:"閉める",l:1},{w:"happy",m:"幸せな",l:1},{w:"sad",m:"悲しい",l:1},{w:"angry",m:"怒った",l:1},{w:"tired",m:"疲れた",l:1},{w:"hungry",m:"空腹の",l:1},{w:"thirsty",m:"喉が渇いた",l:1},{w:"good",m:"良い",l:1},{w:"bad",m:"悪い",l:1},{w:"big",m:"大きい",l:1},{w:"small",m:"小さい",l:1},{w:"long",m:"長い",l:1},{w:"short",m:"短い",l:1},{w:"new",m:"新しい",l:1},{w:"old",m:"古い",l:1},{w:"hot",m:"暑い",l:1},{w:"cold",m:"寒い",l:1},{w:"warm",m:"暖かい",l:1},{w:"cool",m:"涼しい",l:1},{w:"fast",m:"速い",l:1},{w:"slow",m:"遅い",l:1},{w:"easy",m:"簡単な",l:1},{w:"difficult",m:"難しい",l:1},{w:"interesting",m:"面白い",l:1},{w:"boring",m:"退屈な",l:1},{w:"fun",m:"楽しい",l:1},{w:"busy",m:"忙しい",l:1},{w:"free",m:"暇な/自由な",l:1},{w:"favorite",m:"一番好きな",l:1},{w:"popular",m:"人気のある",l:1},{w:"important",m:"重要な",l:1},{w:"beautiful",m:"美しい",l:1},{w:"kind",m:"親切な",l:1},{w:"time",m:"時間",l:1},{w:"day",m:"日",l:1},{w:"week",m:"週",l:1},{w:"month",m:"月",l:1},{w:"year",m:"年",l:1},{w:"morning",m:"朝",l:1},{w:"afternoon",m:"午後",l:1},{w:"evening",m:"夕方",l:1},{w:"night",m:"夜",l:1},{w:"today",m:"今日",l:1},{w:"tomorrow",m:"明日",l:1},{w:"yesterday",m:"昨日",l:1},{w:"summer",m:"夏",l:1},{w:"winter",m:"冬",l:1},{w:"spring",m:"春",l:1},{w:"fall",m:"秋",l:1},{w:"vacation",m:"休暇",l:1},{w:"holiday",m:"休日",l:1},{w:"breakfast",m:"朝食",l:1},{w:"lunch",m:"晝食",l:1},{w:"dinner",m:"夕食",l:1},{w:"food",m:"食べ物",l:1},{w:"water",m:"水",l:1},{w:"book",m:"本",l:1},{w:"pen",m:"ペン",l:1},{w:"computer",m:"コンピュータ",l:1},{w:"phone",m:"電話",l:1},{w:"money",m:"お金",l:1},{w:"bag",m:"鞄",l:1},{w:"clothes",m:"服",l:1},{w:"car",m:"車",l:1},{w:"bus",m:"バス",l:1},{w:"train",m:"電車",l:1},{w:"bike",m:"自転車",l:1},{w:"city",m:"都市",l:1},{w:"park",m:"公園",l:1},{w:"hospital",m:"病院",l:1},{w:"station",m:"駅",l:1},{w:"restaurant",m:"レストラン",l:1},{w:"museum",m:"博物館",l:1},{w:"idea",m:"考え",l:1},{w:"problem",m:"問題",l:1},{w:"question",m:"質問",l:1},{w:"answer",m:"答え",l:1},{w:"story",m:"物語",l:1},{w:"letter",m:"手紙",l:1},{w:"picture",m:"寫真",l:1},{w:"music",m:"音樂",l:1},{w:"movie",m:"映画",l:1},{w:"sport",m:"スポーツ",l:1},{w:"game",m:"ゲーム",l:1},{w:"art",m:"芸術",l:1},{w:"history",m:"歴史",l:1},{w:"science",m:"科學",l:1},{w:"math",m:"數學",l:1},{w:"English",m:"英語",l:1},{w:"Japanese",m:"日本語",l:1},{w:"animal",m:"動物",l:1},{w:"dog",m:"犬",l:1},{w:"cat",m:"貓",l:1},{w:"bird",m:"鳥",l:1},{w:"fish",m:"魚",l:1},{w:"flower",m:"花",l:1},{w:"tree",m:"木",l:1},{w:"river",m:"川",l:1},{w:"sea",m:"海",l:1},{w:"mountain",m:"山",l:1},{w:"sky",m:"空",l:1},{w:"sun",m:"太陽",l:1},{w:"moon",m:"月",l:1},{w:"star",m:"星",l:1},{w:"rain",m:"雨",l:1},{w:"snow",m:"雪",l:1},{w:"wind",m:"風",l:1},{w:"cloud",m:"雲",l:1}];
 
 const App = {
     db: [], apiKey: "", userNickname: "大寶",
@@ -387,7 +710,7 @@ const App = {
             try {
                 let parsed = JSON.parse(saved);
                 if (Array.isArray(parsed)) {
-                    App.db = parsed;
+                    App.db = parsed.filter(w => w && w.w);
                     CORE_WORDS.forEach(defW => { if(!App.db.find(d => d.w === defW.w)) App.db.push(this.createObj(defW)); });
                     App.db.forEach(w => { 
                         if(w.correctCount === undefined) { w.correctCount = 0; w.totalAttempts = 0; }
@@ -424,10 +747,70 @@ const App = {
     createObj(raw) { return { w: raw.w, m: raw.m, l: raw.l, status: 'new', interval: 0, nextReview: 0, mastered: false, correctCount: 0, totalAttempts: 0, lastReviewTime: 0, paused: false }; },
     save() { localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(App.db)); },
     getPetStatus() {
-        const mastered = App.db.filter(w => w.mastered).length;
+        const baseMastered = App.db.filter(w => w.mastered).length;
+        const petExp = parseInt(localStorage.getItem('spellquest_pet_exp')) || 0;
+        const totalEnergy = baseMastered + petExp; 
         let cur = PET_DATA[0], levelIdx = 0;
-        for(let i=0; i<PET_DATA.length; i++) { if(mastered >= PET_DATA[i].t) { cur = PET_DATA[i]; levelIdx = i; } else break; }
-        return { ...cur, level: levelIdx + 1, masteredCount: mastered };
+        for(let i=0; i<PET_DATA.length; i++) { 
+            if(totalEnergy >= PET_DATA[i].t) { cur = PET_DATA[i]; levelIdx = i; } else break; 
+        }
+        return { ...cur, level: levelIdx + 1, masteredCount: totalEnergy };
+    }
+};
+
+const PetSystem = {
+    openCakeBox() {
+        const savedCakes = JSON.parse(localStorage.getItem('spellquest_cakes') || '[]');
+        const listContainer = document.getElementById('cake-list');
+        if (savedCakes.length === 0) {
+            listContainer.innerHTML = '<div style="padding: 20px; color: #b2bec3;">ケーキがありません。<br>魔法のパン屋で作ってね！</div>';
+        } else {
+            listContainer.innerHTML = savedCakes.map((cake, index) => `
+                <div style="background: #fff; border: 2px solid #ffb8b8; border-radius: 12px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 2rem;">${cake.icon}</span>
+                        <div style="text-align: left;">
+                            <div style="font-weight: bold; color: #2d3436; font-size: 0.9rem;">${cake.name}</div>
+                            <div style="font-size: 0.75rem; color: #e17055; font-weight: bold;">エネルギー +${cake.energy}</div>
+                        </div>
+                    </div>
+                    <button class="btn small" style="background: #ff7675; box-shadow: 0 3px 0 #d63031; padding: 5px 15px; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="PetSystem.feed(${index})">食べる</button>
+                </div>
+            `).join('');
+        }
+        document.getElementById('cake-modal').classList.add('show');
+    },
+
+    feed(cakeIndex) {
+        const savedCakes = JSON.parse(localStorage.getItem('spellquest_cakes') || '[]');
+        if (cakeIndex < 0 || cakeIndex >= savedCakes.length) return;
+        const cake = savedCakes[cakeIndex];
+        
+        // Get old pet index
+        const oldStatus = App.getPetStatus();
+        const oldPetIndex = oldStatus.level - 1;
+
+        let currentExp = parseInt(localStorage.getItem('spellquest_pet_exp')) || 0;
+        currentExp += cake.energy;
+        localStorage.setItem('spellquest_pet_exp', currentExp);
+        savedCakes.splice(cakeIndex, 1);
+        localStorage.setItem('spellquest_cakes', JSON.stringify(savedCakes));
+        document.getElementById('cake-modal').classList.remove('show');
+        
+        // Get new pet index
+        const newStatus = App.getPetStatus();
+        const newPetIndex = newStatus.level - 1;
+
+        UI.updateHome();
+        UI.renderGallery();
+
+        setTimeout(() => {
+            if (newPetIndex > oldPetIndex) {
+                UI.alert('🎉 進化しました！', `${oldStatus.e} が ${newStatus.e} ${newStatus.n} に進化したよ！\n図鑑をチェックしてみよう！`);
+            } else {
+                UI.alert('もぐもぐ...', `${cake.icon} ${cake.name} を食べて、経験値が +${cake.energy} 増えたよ！`);
+            }
+        }, 300);
     }
 };
 
@@ -462,18 +845,14 @@ const Gemini = {
         const status = App.getPetStatus(), currentPet = PET_DATA[status.level - 1]; 
         const strongWords = App.db.filter(w => !w.paused && w.mastered).sort((a,b) => b.lastReviewTime - a.lastReviewTime).slice(0, 3);
         const weakWords = App.db.filter(w => !w.paused && w.totalAttempts > 2 && (w.correctCount / w.totalAttempts) < 0.6).slice(0, 2);
-        
         UI.alert("ペット単語教室", "ペットが考え中...");
         document.getElementById('modal-content').innerHTML = `<div style="text-align:center;"><div style="font-size:3rem; animation: bounce 1s infinite;">${status.e}</div><p>考え中...</p></div>`;
-
         const system = `你是 ${currentPet.n}。請用日文給 ${App.userNickname} 寫一封 100 字內的信。性格性格性格性格： ${currentPet.persona}。格式要求：使用 HTML 的 <br> 換行，英語單字用 <b> 加粗。口吻熱血幽默。`;
-
         const prompt = `
         1. 招呼: "よう、${App.userNickname}！"
         2. 誇獎最近學會的: ${strongWords.map(w=>w.w).join(', ')}。
         3. 針對弱點: ${weakWords.map(w=>w.w).join(', ')} 給一個超短記憶秘訣。
         4. 熱血口號結尾。`;
-
         const res = await this.call(prompt, system);
         if (res) {
             const formatted = res.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
@@ -483,27 +862,26 @@ const Gemini = {
         }
     },
 
-    async generateStory(target) {
-        const boxId = target === 'home' ? 'home-ai-box' : 'result-ai-box', contentId = target === 'home' ? 'home-ai-content' : 'result-ai-content';
-        const box = document.getElementById(boxId), content = document.getElementById(contentId);
-        box.classList.add('show'); content.innerText = "AIが物語を執筆中...";
+    async generateStory(mode) {
+        Router.go('result');
+        const content = document.getElementById('story-content');
+        if (content) content.innerHTML = "AIが物語を執筆中...<br><br>少々お待ちください✨";
         
         const status = App.getPetStatus(), level = status.level, targetLines = level * 2, todayTs = new Date().setHours(0,0,0,0);
-        
         let pool = App.db.filter(w => !w.paused && w.lastReviewTime >= todayTs).map(w => w.w);
         if (pool.length < 5) pool.push(...App.db.filter(w => !w.paused && w.mastered && !pool.includes(w.w)).map(w => w.w));
         if (pool.length < 5) pool.push(...App.db.filter(w => !w.paused && !pool.includes(w.w)).map(w => w.w));
         const selection = pool.sort(() => 0.5 - Math.random()).slice(0, 5);
-        
         const system = `You are a storyteller for 10-year-olds. Use Eiken Grade 3 level English.
         Exactly ${targetLines} short sentences. Start a new line (<br>) for EVERY sentence. 
         Highlight these words in <b>: ${selection.join(', ')}. No code blocks.`;
-
         const res = await this.call(`Write a funny story using: ${selection.join(', ')}`, system);
         if (res) {
-            content.innerHTML = res.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') + '<br><b>読んでくれてありがとう！</b>';
+            const storyText = res.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') + '<br><br><b>読んでくれてありがとう！</b>';
+            localStorage.setItem('spellquest_last_story', storyText);
+            UI.renderStory();
         } else {
-            content.innerText = "物語の生成に失敗しました。もう一度押してみてね！";
+            if (content) content.innerText = "物語の生成に失敗しました。もう一度押してみてね！";
         }
     },
 
@@ -534,7 +912,10 @@ const Game = {
     },
     next() {
         const pending = this.queue.filter(w => w.sessionStep <= 3);
-        if(!pending.length) { Router.go('result'); return; }
+        if(!pending.length) { 
+            Gemini.generateStory('game'); 
+            return; 
+        }
         this.current = pending[0];
         document.getElementById('progress-text').innerText = (this.total - pending.length + 1) + " / " + this.total;
         document.getElementById('progress-fill').style.width = ((this.total - pending.length + 1)/this.total * 100) + '%';
@@ -577,8 +958,6 @@ const Game = {
         const w = this.current;
         if(w.sessionWrong) w.interval = 1;
         else { if(!w.mastered) { w.interval = 1; w.mastered = true; } else { w.interval = w.interval <= 1 ? 3 : w.interval === 3 ? 7 : Math.ceil(w.interval * 2.2); } }
-        
-        // 【修正1】午夜重置邏輯
         const nextDate = new Date();
         nextDate.setDate(nextDate.getDate() + w.interval);
         nextDate.setHours(0, 0, 0, 0); 
@@ -606,14 +985,188 @@ const Router = {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         const target = document.getElementById('screen-' + page);
         if (target) target.classList.add('active');
-        if (page === 'home') UI.updateHome();
+        if (page === 'home') UI.updateHome(); 
         if (page === 'gallery') UI.renderGallery();
         if (page === 'wordbook') UI.renderWordbook();
-        if (page === 'admin') Admin.render();
+        if (page === 'admin') Admin.render(); 
+        if (page === 'bakery') UI.renderBakery(); 
+    }
+};
+
+const BakerySystem = {
+    selectedIngredients: [],
+    recipes: [
+        { name: 'サクサククッキー', icon: '🍪', energy: 1, req: ['wheat', 'butter'] },
+        { name: 'ふわふわカップケーキ', icon: '🧁', energy: 2, req: ['wheat', 'egg', 'milk'] },
+        { name: '満腹パンケーキ', icon: '🥞', energy: 3, req: ['wheat', 'egg', 'milk', 'butter'] },
+        { name: '奇跡のプリン', icon: '🍮', energy: 4, req: ['egg', 'milk', 'apple'] },
+        { name: '究極のアップルパイ', icon: '🥧', energy: 5, req: ['wheat', 'butter', 'apple', 'apple', 'apple'] }
+    ],
+
+    select(id) {
+        const savedInv = JSON.parse(localStorage.getItem('spellquest_inventory') || '{}');
+        const totalOwned = savedInv[id] || 0;
+        const currentlySelected = BakerySystem.selectedIngredients.filter(item => item === id).length;
+        if (currentlySelected < totalOwned) {
+            BakerySystem.selectedIngredients.push(id);
+            UI.renderBakery();
+        }
+    },
+
+    deselect(index) {
+        BakerySystem.selectedIngredients.splice(index, 1);
+        UI.renderBakery();
+    },
+
+    bake() {
+        if (BakerySystem.selectedIngredients.length === 0) {
+            UI.alert('お知らせ', 'ボウルがからっぽだよ！食材を入れてね。');
+            return;
+        }
+        const getRecipeKey = (ingredients) => {
+            const counts = {};
+            ingredients.forEach(id => counts[id] = (counts[id] || 0) + 1);
+            return Object.keys(counts).sort().map(k => `${k}:${counts[k]}`).join(',');
+        };
+        const selectedKey = getRecipeKey(BakerySystem.selectedIngredients);
+        let matchedRecipe = null;
+        for (let recipe of BakerySystem.recipes) {
+            if (selectedKey === getRecipeKey(recipe.req)) { matchedRecipe = recipe; break; }
+        }
+        if (matchedRecipe) {
+            const savedInv = JSON.parse(localStorage.getItem('spellquest_inventory') || '{}');
+            BakerySystem.selectedIngredients.forEach(id => { if (savedInv[id]) savedInv[id]--; });
+            localStorage.setItem('spellquest_inventory', JSON.stringify(savedInv));
+            let savedCakes = JSON.parse(localStorage.getItem('spellquest_cakes') || '[]');
+            if (!Array.isArray(savedCakes)) savedCakes = [];
+            savedCakes.push({ name: matchedRecipe.name, icon: matchedRecipe.icon, energy: matchedRecipe.energy, date: new Date().toISOString() });
+            localStorage.setItem('spellquest_cakes', JSON.stringify(savedCakes));
+            UI.alert('大成功！🎉', `${matchedRecipe.icon} ${matchedRecipe.name} が完成したよ！\nホーム画面のケーキボックスからペットにあげよう！`);
+        } else {
+            UI.alert('失敗...💦', '不思議な物体になっちゃった。レシピを考えてみよう！');
+        }
+        BakerySystem.selectedIngredients = [];
+        UI.renderBakery();
+    }
+};
+
+// ===== Wordbook フィルター管理 =====
+const Wordbook = {
+    currentCategory: 'all',
+    currentStatus: 'all',
+
+    setFilter() {
+        this.currentCategory = document.getElementById('filter-category').value;
+        this.currentStatus = document.getElementById('filter-status').value;
+        UI.renderWordbook();
+    },
+
+    toggleAddForm() {
+        const form = document.getElementById('wb-add-form');
+        const isHidden = form.style.display === 'none' || form.style.display === '';
+        form.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) document.getElementById('wb-add-en').focus();
+    },
+
+    getFilteredWords() {
+        let words = [...App.db];
+        
+        // Category Filter
+        if (this.currentCategory !== 'all') {
+            words = words.filter(w => w.l === parseInt(this.currentCategory));
+        }
+        
+        // Status Filter
+        if (this.currentStatus !== 'all') {
+            if (this.currentStatus === 'new') {
+                words = words.filter(w => !w.interval || w.interval === 0);
+            } else if (this.currentStatus === 'review') {
+                words = words.filter(w => w.interval > 0 && w.interval < 21);
+            } else if (this.currentStatus === 'mastered') {
+                words = words.filter(w => w.interval >= 21);
+            }
+        }
+        
+        return words.sort((a, b) => a.w.localeCompare(b.w));
     }
 };
 
 const UI = {
+    renderBakery() {
+        const savedInv = localStorage.getItem('spellquest_inventory');
+        const inventory = savedInv ? JSON.parse(savedInv) : { wheat: 0, egg: 0, milk: 0, butter: 0, apple: 0 };
+        const itemsInfo = {
+            wheat: { name: '小麦粉', icon: '🌾', color: '#f39c12' },
+            egg: { name: '卵', icon: '🥚', color: '#d35400' },
+            milk: { name: 'ミルク', icon: '🥛', color: '#0984e3' },
+            butter: { name: 'バター', icon: '🧈', color: '#f1c40f' },
+            apple: { name: 'りんご', icon: '🍎', color: '#e74c3c' }
+        };
+
+        const bowlContainer = document.getElementById('bakery-bowl');
+        if (!bowlContainer) return;
+        
+        if (BakerySystem.selectedIngredients.length === 0) {
+            bowlContainer.innerHTML = '<span style="color:#a4b0be; font-weight:bold;">からっぽ</span>';
+        } else {
+            bowlContainer.innerHTML = BakerySystem.selectedIngredients.map((id, index) => `
+                <div onclick="BakerySystem.deselect(${index})" style="font-size:2rem; cursor:pointer; background:#fff; border-radius:50%; width:50px; height:50px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 6px rgba(0,0,0,0.1); transition:transform 0.1s;">
+                    ${itemsInfo[id].icon}
+                </div>
+            `).join('');
+        }
+
+        let recipeGuide = document.getElementById('bakery-recipe-guide');
+        if (!recipeGuide) {
+            recipeGuide = document.createElement('div');
+            recipeGuide.id = 'bakery-recipe-guide';
+            recipeGuide.style.cssText = 'background:#fff; border-radius:12px; padding:12px; margin-bottom:15px; border:2px solid #ffeaa7; text-align:left; font-size:0.85rem;';
+            bowlContainer.parentElement.insertAdjacentElement('afterend', recipeGuide);
+        }
+        recipeGuide.innerHTML = `
+            <div style="font-weight:bold; color:#d35400; margin-bottom:8px; text-align:center;">📖 レシピ帳</div>
+            <div style="display:flex; flex-direction:column; gap:6px; color:#576574;">
+                <div style="display:flex; justify-content:space-between;"><span>🍪 サクサククッキー</span><span>🌾 + 🧈 <b style="color:#e17055;">(+1)</b></span></div>
+                <div style="display:flex; justify-content:space-between;"><span>🧁 ふわふわカップケーキ</span><span>🌾 + 🥚 + 🥛 <b style="color:#e17055;">(+2)</b></span></div>
+                <div style="display:flex; justify-content:space-between;"><span>🥞 満腹パンケーキ</span><span>🌾 + 🥚 + 🥛 + 🧈 <b style="color:#e17055;">(+3)</b></span></div>
+                <div style="display:flex; justify-content:space-between;"><span>🍮 奇跡のプリン</span><span>🥚 + 🥛 + 🍎 <b style="color:#e17055;">(+4)</b></span></div>
+                <div style="display:flex; justify-content:space-between;"><span>🥧 究極のアップルパイ</span><span>🌾 + 🧈 + 🍎×3 <b style="color:#e17055;">(+5)</b></span></div>
+            </div>
+        `;
+
+        const invContainer = document.getElementById('bakery-inventory');
+        const selectedCounts = {};
+        BakerySystem.selectedIngredients.forEach(id => { selectedCounts[id] = (selectedCounts[id] || 0) + 1; });
+
+        invContainer.innerHTML = Object.keys(itemsInfo).map(id => {
+            const total = inventory[id] || 0;
+            const used = selectedCounts[id] || 0;
+            const available = total - used;
+            const item = itemsInfo[id];
+            const opacity = available > 0 ? '1' : '0.4';
+            const cursor = available > 0 ? 'pointer' : 'default';
+            const clickAction = available > 0 ? `onclick="BakerySystem.select('${id}')"` : '';
+            return `
+                <div ${clickAction} style="background: #fff; border: 2px solid ${item.color}; border-radius: 12px; padding: 8px; box-shadow: 0 4px 0 ${item.color}33; opacity: ${opacity}; cursor: ${cursor};">
+                    <div style="font-size: 2rem; margin-bottom: 2px;">${item.icon}</div>
+                    <div style="font-size: 0.75rem; font-weight: bold; color: var(--text);">${item.name}</div>
+                    <div style="font-size: 1.1rem; font-weight: bold; color: ${item.color}; margin-top: 2px;">x ${available}</div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    renderStory() {
+        const content = document.getElementById('story-content');
+        if (!content) return;
+        const savedStory = localStorage.getItem('spellquest_last_story');
+        if (savedStory) {
+            content.innerHTML = savedStory.replace(/\n/g, '<br>');
+        } else {
+            content.innerHTML = "まだ物語がありません。下のボタンを押して新しい物語を作ってね！";
+        }
+    },
+
     updateHome() {
         const status = App.getPetStatus();
         document.getElementById('pet-display').innerText = status.e;
@@ -629,6 +1182,7 @@ const UI = {
         document.getElementById('streak-days').innerText = localStorage.getItem('streak') || 0;
         this.updateMissionDisplay();
     },
+
     updateMissionDisplay() {
         const now = Date.now(), dateStr = new Date().toISOString().split('T')[0];
         const dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${dateStr}`) || 0);
@@ -637,6 +1191,7 @@ const UI = {
         document.querySelectorAll('.mission-new-count').forEach(el => el.innerText = news);
         document.querySelectorAll('.mission-review-count').forEach(el => el.innerText = reviews);
     },
+
     renderGallery() {
         const container = document.getElementById('gallery-container'), mastered = App.db.filter(w => w.mastered).length;
         container.innerHTML = '';
@@ -648,15 +1203,98 @@ const UI = {
             container.appendChild(div);
         });
     },
-    renderWordbook() {
-        const container = document.getElementById('wordbook-container'); container.innerHTML = '';
-        [...App.db].sort((a,b) => a.w.localeCompare(b.w)).forEach(w => {
-            const div = document.createElement('div'); div.className = 'word-item';
-            div.innerHTML = `<div><div class="word-en">${w.w}</div><div class="word-jp">${w.m}</div></div><span class="tag lvl-${w.l}">${WORD_LEVELS[w.l]}</span>`;
-            div.onclick = () => this.showWordDetail(w); container.appendChild(div);
-        });
-    },
+
+// ===== 3カラム カード型 renderWordbook =====
+renderWordbook() {
+    const container = document.getElementById('wordbook-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Sync dropdowns with state
+    const catSelect = document.getElementById('filter-category');
+    const statSelect = document.getElementById('filter-status');
+    if (catSelect) catSelect.value = Wordbook.currentCategory;
+    if (statSelect) statSelect.value = Wordbook.currentStatus;
+
+    const words = Wordbook.getFilteredWords();
+
+    if (words.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:#b2bec3; font-size:0.95rem;">該当する単語がありません</div>`;
+        return;
+    }
+
+    const now = Date.now();
+
+    words.forEach(w => {
+        // ── 統計計算 ──────────────────────────────
+        const acc = w.totalAttempts > 0
+            ? Math.min(100, Math.round((w.correctCount / w.totalAttempts) * 100))
+            : null;
+
+        // 学習状態タグ
+        let stateLabel, stateClass;
+        const interval = w.interval || 0;
+        if (interval === 0) {
+            stateLabel = '🌱 新規';  stateClass = 'wb-state-new';
+        } else if (interval >= 21) {
+            stateLabel = '✅ 習得済み'; stateClass = 'wb-state-mastered';
+        } else {
+            stateLabel = '🔄 復習中';  stateClass = 'wb-state-review';
+        }
+
+        // 次回復習日
+        let nextLabel = '';
+        if (w.nextReview > 0) {
+            const daysLeft = Math.ceil((w.nextReview - now) / 86400000);
+            nextLabel = daysLeft <= 0 ? '📅 今日' : `📅 ${daysLeft}日後`;
+        }
+
+        // 正答率
+        const accLabel = acc !== null ? `🎯 ${acc}%` : '🎯 ─';
+
+        // カテゴリタグの色クラス（既存 lvl-1/2/3 を流用）
+        const lvlClass = `lvl-${w.l}`;
+        const lvlName  = WORD_LEVELS[w.l] || '';
+
+        // ── HTMLエスケープ（クォート対策） ──────────
+        const safeW = w.w.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+        // ── 停止中 or active===false で薄くする ──────
+        const isInactive = w.paused || w.active === false;
+
+        // ── カード生成 ────────────────────────────
+        const card = document.createElement('div');
+        card.className = `wb-card${isInactive ? ' inactive-card' : ''}`;
+
+        card.innerHTML = `
+            <!-- Col 1: 英単語 & 意味 -->
+            <div class="wb-col-word" onclick="UI.showWordDetail(App.db.find(x=>x.w==='${safeW}'))">
+                <div class="wb-word-en">${w.w}</div>
+                <div class="wb-word-jp">${w.m}</div>
+            </div>
+
+            <!-- Col 2: タグ & 統計 -->
+            <div class="wb-col-stats" onclick="UI.showWordDetail(App.db.find(x=>x.w==='${safeW}'))">
+                <span class="wb-cat-tag ${lvlClass}">${lvlName}</span>
+                <span class="wb-state-tag ${stateClass}">${stateLabel}</span>
+                <span class="wb-stat-line">${accLabel}　${nextLabel}</span>
+            </div>
+
+            <!-- Col 3: 2×2 アクションボタン -->
+            <div class="wb-col-actions">
+                <button class="btn icon-btn" onclick="Admin.editItem('${safeW}')"   title="編集">✏️</button>
+                <button class="btn icon-btn" onclick="Admin.togglePause('${safeW}')" title="${isInactive ? '再開' : '停止'}">${isInactive ? '▶️' : '⏸️'}</button>
+                <button class="btn icon-btn" onclick="Admin.resetItem('${safeW}')"  title="リセット">↺</button>
+                <button class="btn icon-btn danger" onclick="Admin.deleteItem('${safeW}')" title="削除">🗑️</button>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+},
+
     showWordDetail(word) {
+        if (!word) return;
         const modal = document.getElementById('custom-modal'), cancel = document.getElementById('modal-cancel');
         document.getElementById('modal-msg').innerHTML = word.w;
         document.getElementById('modal-content').innerHTML = `<div style="font-weight:bold; margin-bottom:15px; color:#666;">意味: ${word.m}</div><button class="btn ai small" id="gen-sentence-btn" style="width:100%;">✨ AI例文をリクエスト</button><div id="detail-ai-box" class="ai-box">AI例文を作成中...</div>`;
@@ -667,6 +1305,7 @@ const UI = {
             box.innerText = res || "失敗しました";
         };
     },
+
     alert(title, text) {
         document.getElementById('modal-msg').innerText = title; document.getElementById('modal-content').innerText = text;
         const ok = document.getElementById('modal-ok'), cancel = document.getElementById('modal-cancel');
@@ -674,6 +1313,7 @@ const UI = {
         ok.classList.remove('hidden'); cancel.classList.remove('hidden'); cancel.innerText = "閉じる";
         document.getElementById('custom-modal').classList.add('show');
     },
+
     confirm(title, text, onOk) {
         document.getElementById('modal-msg').innerText = title; document.getElementById('modal-content').innerText = text;
         const ok = document.getElementById('modal-ok'), cancel = document.getElementById('modal-cancel');
@@ -688,49 +1328,135 @@ const Admin = {
         document.getElementById('nickname-input').value = App.userNickname;
         document.getElementById('limit-new').value = App.dailyNewLimit;
         document.getElementById('limit-review').value = App.dailyReviewLimit;
-        const table = document.getElementById('admin-table'); 
-        table.innerHTML = `<tr><th>単語</th><th>正解率</th><th>次回</th><th>操作</th></tr>`;
+        const savedSentenceLvl = localStorage.getItem('spellquest_sentence_lvl') || 1;
+        if(document.getElementById('admin-sentence-lvl')) document.getElementById('admin-sentence-lvl').value = savedSentenceLvl;
+    },
+
+    saveNickname() {
+        App.userNickname = document.getElementById('nickname-input').value.trim();
+        localStorage.setItem('spellquest_nickname', App.userNickname);
+        UI.alert("成功", "保存しました！");
+    },// ★ 寫作紀錄匯出 (NotebookLM用)
+    exportSentences() {
+        const savedDb = localStorage.getItem('spellquest_sentences_db');
+        if (!savedDb) {
+            UI.alert('お知らせ', 'まだ記録がありません。');
+            return;
+        }
+        const db = JSON.parse(savedDb);
+        if (db.length === 0) {
+            UI.alert('お知らせ', 'まだ記録がありません。');
+            return;
+        }
+
+        // 把數字等級轉換成您熟悉的名稱
+        const rankNames = ['C級', 'B級', 'A級', 'S級', 'SS級'];
+        let csv = "Date,Level,Target Word,Prompt,User Input,AI Correction,Error Type,Pass\n";
         
-        [...App.db].sort((a,b) => a.l - b.l || a.w.localeCompare(b.w)).forEach(w => {
-            const tr = document.createElement('tr'), acc = w.totalAttempts > 0 ? Math.round((w.correctCount/w.totalAttempts)*100) : 0;
-            let next = "New"; if(w.nextReview > 0) { const d = Math.ceil((w.nextReview - Date.now()) / 86400000); next = d <= 0 ? "<span style='color:red;font-weight:bold;'>今日</span>" : d + "日後"; }
-            if(w.paused) tr.classList.add('paused-row');
+        db.forEach(row => {
+            const d = new Date(row.date).toLocaleString('ja-JP');
+            const lvlStr = rankNames[row.level - 1] || `Lv ${row.level}`;
+            const word = row.targetVocab || "";
+            // 防止句子裡的逗號破壞 CSV 格式
+            const q = (str) => '"' + String(str).replace(/"/g, '""') + '"';
             
-            tr.innerHTML = `
-                <td><b>${w.w}</b><br><small>${w.m}</small>${w.paused ? '<br><span class="paused-tag">停止中</span>' : ''}</td>
-                <td>${acc}%</td>
-                <td>${next}</td>
-                <td>
-                    <div style="display:flex; flex-wrap:wrap; justify-content:center; width:64px; gap:2px;">
-                        <button class="btn icon-btn outline" onclick="Admin.editItem('${w.w}')" title="編集">✏️</button>
-                        <button class="btn icon-btn outline" onclick="Admin.togglePause('${w.w}')" title="${w.paused ? '再開' : '停止'}">${w.paused ? '▶️' : '⏸️'}</button>
-                        <button class="btn icon-btn outline" onclick="Admin.resetItem('${w.w}')" title="リセット">↺</button>
-                        <button class="btn icon-btn danger" onclick="Admin.deleteItem('${w.w}')" title="削除">🗑️</button>
-                    </div>
-                </td>`;
-            table.appendChild(tr);
+            csv += `${q(d)},${q(lvlStr)},${q(word)},${q(row.promptJp)},${q(row.userInput)},${q(row.aiCorrection)},${q(row.errorType)},${row.pass}\n`;
         });
+
+        // 加上 BOM，確保 Excel 或 NotebookLM 打開時不會變成亂碼
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "notebooklm_writing_records.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     },
-    saveNickname() { localStorage.setItem('spellquest_nickname', document.getElementById('nickname-input').value.trim()); App.userNickname = document.getElementById('nickname-input').value.trim(); UI.alert("成功", "保存しました！"); },
-    saveLimits() { App.dailyNewLimit = parseInt(document.getElementById('limit-new').value); App.dailyReviewLimit = parseInt(document.getElementById('limit-review').value); localStorage.setItem('spellquest_newLimit', App.dailyNewLimit); localStorage.setItem('spellquest_reviewLimit', App.dailyReviewLimit); UI.alert("成功", "保存しました！"); UI.updateHome(); },
-    saveApiKey() { localStorage.setItem('gemini_api_key', document.getElementById('api-key-input').value.trim()); App.apiKey = document.getElementById('api-key-input').value.trim(); UI.alert("成功", "保存しました！"); },
-    add() {
-        const en = document.getElementById('add-en').value.trim(), jp = document.getElementById('add-jp').value.trim(), lvl = parseInt(document.getElementById('add-lvl').value);
-        if(!en || !jp) return UI.alert("エラー", "単語與意味を入力してください");
-        if(App.db.find(w => w.w.toLowerCase() === en.toLowerCase())) return UI.alert("エラー", "重複しています");
-        App.db.push(App.createObj({w:en, m:jp, l:lvl}));
-        App.save(); document.getElementById('add-en').value = ''; document.getElementById('add-jp').value = '';
-        UI.alert("成功", "追加しました！"); this.render(); UI.updateHome();
-    },
-    editItem(wordEn) {
-        const word = App.db.find(w => w.w === wordEn);
-        if(word) {
-            const newEn = prompt("英語を編集:", word.w), newJp = prompt("意味を編集:", word.m);
-            if(newEn && newJp) { word.w = newEn.trim(); word.m = newJp.trim(); App.save(); this.render(); }
+
+    // ★ 清空寫作紀錄 (釋放記憶體)
+    clearSentences() {
+        if (confirm('本当にすべての学習記録を削除しますか？(復元できません)')) {
+            localStorage.removeItem('spellquest_sentences_db');
+            if (typeof SentenceGame !== 'undefined') SentenceGame.db = [];
+            UI.alert('完了', '学習記録を削除しました。');
         }
     },
-    togglePause(wordEn) { const word = App.db.find(w => w.w === wordEn); if(word) { word.paused = !word.paused; App.save(); this.render(); UI.updateHome(); } },
-    deleteItem(wordEn) { if(confirm(`「${wordEn}」を削除しますか？`)) { App.db = App.db.filter(w => w.w !== wordEn); App.save(); this.render(); UI.updateHome(); } },
+
+    saveSentenceLevel() {
+        const lvl = parseInt(document.getElementById('admin-sentence-lvl').value);
+        localStorage.setItem('spellquest_sentence_lvl', lvl);
+        if (typeof SentenceGame !== 'undefined') SentenceGame.currentLevel = lvl;
+        UI.alert("成功", "文章コーチのレベルを保存しました！");
+    },
+
+    saveLimits() {
+        App.dailyNewLimit = parseInt(document.getElementById('limit-new').value);
+        App.dailyReviewLimit = parseInt(document.getElementById('limit-review').value);
+        localStorage.setItem('spellquest_newLimit', App.dailyNewLimit);
+        localStorage.setItem('spellquest_reviewLimit', App.dailyReviewLimit);
+        UI.alert("成功", "保存しました！");
+        UI.updateHome();
+    },
+
+    saveApiKey() {
+        App.apiKey = document.getElementById('api-key-input').value.trim();
+        localStorage.setItem('gemini_api_key', App.apiKey);
+        UI.alert("成功", "保存しました！");
+    },
+
+    // ===== 単語帳から呼ばれる単語管理メソッド（UI更新先: UI.renderWordbook） =====
+    addWord() {
+        const en = document.getElementById('wb-add-en').value.trim();
+        const jp = document.getElementById('wb-add-jp').value.trim();
+        const lvl = parseInt(document.getElementById('wb-add-lvl').value);
+        if (!en || !jp) return UI.alert("エラー", "単語と意味を入力してください");
+        if (App.db.find(w => w.w.toLowerCase() === en.toLowerCase())) return UI.alert("エラー", "すでに登録されています");
+        App.db.push(App.createObj({ w: en, m: jp, l: lvl }));
+        App.save();
+        document.getElementById('wb-add-en').value = '';
+        document.getElementById('wb-add-jp').value = '';
+        document.getElementById('wb-add-form').style.display = 'none';
+        UI.renderWordbook();
+        UI.updateHome();
+        UI.alert("成功", `「${en}」を追加しました！`);
+    },
+
+    // 旧 add() との互換エイリアス
+    add() { this.addWord(); },
+
+    editItem(wordEn) {
+        const word = App.db.find(w => w.w === wordEn);
+        if (word) {
+            const newEn = prompt("英語を編集:", word.w);
+            const newJp = prompt("意味を編集:", word.m);
+            if (newEn && newJp) {
+                word.w = newEn.trim(); word.m = newJp.trim();
+                App.save(); UI.renderWordbook();
+            }
+        }
+    },
+
+    togglePause(wordEn) {
+        const word = App.db.find(w => w.w === wordEn);
+        if (word) { word.paused = !word.paused; App.save(); UI.renderWordbook(); UI.updateHome(); }
+    },
+
+    deleteItem(wordEn) {
+        if (confirm(`「${wordEn}」を削除しますか？`)) {
+            App.db = App.db.filter(w => w.w !== wordEn);
+            App.save(); UI.renderWordbook(); UI.updateHome();
+        }
+    },
+
+    resetItem(wordEn) {
+        const w = App.db.find(i => i.w === wordEn);
+        if (w) {
+            Object.assign(w, { mastered: false, interval: 0, nextReview: 0, correctCount: 0, totalAttempts: 0 });
+            App.save(); UI.renderWordbook();
+        }
+    },
+
     exportCSV() {
         const todayStr = new Date().toISOString().split('T')[0], streak = localStorage.getItem('streak') || 0;
         const headers = ["Date", "Streak", "Word", "Meaning", "Level", "Correct", "Attempts", "Accuracy", "Interval", "LastReview"];
@@ -741,28 +1467,349 @@ const Admin = {
             csvRows.push([todayStr, streak, w.w, `"${w.m}"`, w.l, w.correctCount, w.totalAttempts, acc, w.interval, lastRevDate].join(","));
         });
         const blob = new Blob(["\ufeff" + csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); 
+        const link = document.createElement("a");
+        link.setAttribute("href", URL.createObjectURL(blob));
         link.setAttribute("download", `study_report_${todayStr.replace(/-/g, '')}.csv`);
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
     },
-    // 【修正2】強制使用 UTF-8 讀取 CSV，解決中文亂碼問題
+
     processCSV(input) {
         const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             const text = e.target.result, lines = text.split(/\r?\n/);
+            let addedCount = 0;
             lines.forEach(l => {
-                const p = l.split(','); if(p.length < 2) return;
+                const p = l.split(','); if (p.length < 2) return;
                 const existing = App.db.find(w => w.w.toLowerCase() === p[0].trim().toLowerCase());
-                if(existing) { existing.m = p[1].trim(); existing.l = parseInt(p[2]) || 1; }
-                else App.db.push(App.createObj({w: p[0].trim(), m: p[1].trim(), l: parseInt(p[2]) || 1}));
+                if (existing) { existing.m = p[1].trim(); existing.l = parseInt(p[2]) || 1; }
+                else { App.db.push(App.createObj({ w: p[0].trim(), m: p[1].trim(), l: parseInt(p[2]) || 1 })); addedCount++; }
             });
-            App.save(); Admin.render(); UI.updateHome(); UI.alert("完了", "成功！");
+            App.save();
+            if (document.getElementById('screen-wordbook').classList.contains('active')) UI.renderWordbook();
+            UI.updateHome();
+            UI.alert("完了", `CSV読込完了！${addedCount}件追加しました。`);
         };
-        reader.readAsText(file, "UTF-8"); 
+        reader.readAsText(file, "UTF-8");
     },
-    resetItem(word) { const w = App.db.find(i => i.w === word); if(w) { Object.assign(w, {mastered: false, interval: 0, nextReview: 0, correctCount: 0, totalAttempts: 0}); App.save(); Admin.render(); } },
-    resetAll() { UI.confirm("⚠️ 警告", "全データを消去しますか？", () => { localStorage.clear(); location.reload(); }); }
+
+    resetAll() {
+        UI.confirm("⚠️ 警告", "全データを消去しますか？", () => { localStorage.clear(); location.reload(); });
+    }
+};
+
+const SentenceGame = {
+    RANK_NAMES: ['C級 (穴埋め)', 'B級 (アシスト作文)', 'A級 (1文マスター)', 'S級 (意見エキスパート)', 'SS級 (英検ボス討伐)'],
+    db: [],
+    currentLevel: 1,
+    streak: 0,
+    failCount: 0,
+    targetWord: null,
+    currentTask: null,
+    inventory: { wheat: 0, egg: 0, milk: 0, butter: 0, apple: 0 },
+
+    init() {
+        const savedDb = localStorage.getItem('spellquest_sentences_db');
+        this.db = savedDb ? JSON.parse(savedDb) : [];
+        const savedInv = localStorage.getItem('spellquest_inventory');
+        if (savedInv) { this.inventory = { ...this.inventory, ...JSON.parse(savedInv) }; }
+        this.currentLevel = parseInt(localStorage.getItem('spellquest_sentence_lvl')) || 1;
+        this.streak = 0;
+        this.failCount = 0;
+        document.getElementById('sentence-streak').innerText = this.streak;
+        this.updateLevelBadge();
+        document.getElementById('sentence-check-btn').onclick = () => this.checkAnswer();
+        document.getElementById('sentence-tts-btn').onclick = () => this.speakTarget();
+    },
+
+    updateLevelBadge() {
+        document.getElementById('sentence-lvl-badge').innerText = this.RANK_NAMES[this.currentLevel - 1] || this.RANK_NAMES[4];
+    },
+
+    async start() {
+        // 1. Gather all 習得済み words (interval >= 21 and not paused/inactive)
+        let targetPool = App.db.filter(w => w.interval >= 21 && !w.paused && w.active !== false);
+        
+        // 2. If fewer than 5, mix in 復習中 words (interval > 0 and interval < 21)
+        if (targetPool.length < 5) {
+            const reviewPool = App.db.filter(w => w.interval > 0 && w.interval < 21 && !w.paused && w.active !== false);
+            targetPool = [...targetPool, ...reviewPool];
+        }
+
+        // 3. If still empty, fallback to old logic or alert
+        if (targetPool.length === 0) {
+            UI.alert("お知らせ", "まだ学習中の単語がありません。もう少し単語帳を頑張ろう！");
+            Router.go('home');
+            return;
+        }
+
+        this.targetWord = targetPool[Math.floor(Math.random() * targetPool.length)];
+
+        const inputEl = document.getElementById('sentence-input');
+        inputEl.classList.add('hidden');
+        inputEl.value = '';
+        if (this.currentLevel <= 2) inputEl.rows = 2;
+        else if (this.currentLevel === 3) inputEl.rows = 3;
+        else inputEl.rows = 4;
+        
+        const checkBtn = document.getElementById('sentence-check-btn');
+        checkBtn.classList.add('hidden');
+        
+        document.getElementById('sentence-blocks-area').innerHTML = '';
+        document.getElementById('sentence-ai-feedback').classList.remove('show');
+        document.getElementById('sentence-prompt-jp').innerHTML = `<span style="color:var(--primary); font-size:1.2rem;">✨ AIが問題を準備中...</span>`;
+
+        let systemPrompt = "";
+        let prompt = `目標単語: "${this.targetWord.w}" (${this.targetWord.m})`;
+
+        if (this.currentLevel === 1) {
+            systemPrompt = `あなたは英検3級レベルの英語教師です。目標単語「${this.targetWord.w}」を使って、小学生向けの簡単な英文を作成してください。必ず以下のJSONフォーマットのみで返答してください：
+{"jp": "その英文の自然な日本語訳", "scaffold": "英文（ただし「${this.targetWord.w}」の部分を文字数と同じくらいの長さのアンダーバー「_____」に置き換えたもの）"}`;
+        } else if (this.currentLevel === 2) {
+            systemPrompt = `あなたはユーザーの友達です。目標単語「${this.targetWord.w}」に関連する、日常的な質問を日本語で1つ投げかけてください。必ず以下のJSONフォーマットのみで返答してください：
+{"jp": "友達としての日本語の質問", "scaffold": "I want to go to [   ] のような、質問に対する自然な英語の書き出し（ヒント）"}`;
+        } else if (this.currentLevel === 3) {
+            systemPrompt = `あなたは英語の先生です。目標単語「${this.targetWord.w}」に関連する、ユーザーの意見を求める質問を日本語で1つ投げかけてください。必ず以下のJSONフォーマットのみで返答してください：
+{"jp": "先生としての日本語の質問（意見を求める）", "scaffold": "I think [   ] のような、意見を言い始めるための英語の書き出し（ヒント）"}`;
+        } else if (this.currentLevel === 4) {
+            systemPrompt = `あなたは英語の先生です。目標単語「${this.targetWord.w}」に関連する、ユーザーの意見と1つの理由を求める質問を日本語で投げかけてください。必ず以下のJSONフォーマットのみで返答してください：
+{"jp": "先生としての日本語の質問（意見と理由を求める）", "scaffold": ""}`;
+        } else {
+            systemPrompt = `あなたは英検3級の面接官です。目標単語「${this.targetWord.w}」に関連する、英検3級のライティング問題（25〜35語、3文程度で答える）を日本語で出題してください。必ず以下のJSONフォーマットのみで返答してください：
+{"jp": "英検3級ライティング形式の日本語の質問", "scaffold": ""}`;
+        }
+
+        const res = await Gemini.call(prompt, systemPrompt);
+        
+        try {
+            const cleanRes = res.replace(/```json/gi, '').replace(/```/g, '').trim();
+            this.currentTask = JSON.parse(cleanRes);
+            this.renderScaffold(this.currentTask);
+        } catch (e) {
+            console.error("Task Generation Error:", e, res);
+            UI.alert("エラー", "問題の作成に失敗しました。もう一度試してね！");
+            document.getElementById('sentence-prompt-jp').innerHTML = `<button class="btn small outline" onclick="SentenceGame.start()">🔄 再試行</button>`;
+        }
+    },
+
+    renderScaffold(json) {
+        document.getElementById('sentence-prompt-jp').innerHTML = `<b>${json.jp}</b>`;
+        const blocksArea = document.getElementById('sentence-blocks-area');
+        if (json.scaffold) {
+            blocksArea.innerHTML = `
+                <div style="background:#f8f9fa; padding:15px 20px; border-radius:12px; border:2px dashed #a4b0be; width:100%; text-align:left; font-family:'Fredoka', sans-serif; font-size:1.3rem; color:#576574; line-height:1.8; box-sizing:border-box;">
+                    ${json.scaffold}
+                </div>
+            `;
+        } else {
+            blocksArea.innerHTML = '';
+        }
+        const inputEl = document.getElementById('sentence-input');
+        inputEl.classList.remove('hidden');
+        setTimeout(() => inputEl.focus(), 300);
+        const checkBtn = document.getElementById('sentence-check-btn');
+        checkBtn.innerText = "✨ AI 魔法チェック";
+        checkBtn.disabled = false;
+        checkBtn.classList.remove('hidden');
+    },
+
+    async checkAnswer() {
+        const inputEl = document.getElementById('sentence-input');
+        const userInput = inputEl.value.trim();
+        if (!userInput) return;
+
+        const checkBtn = document.getElementById('sentence-check-btn');
+        checkBtn.innerText = "✨ 魔法チェック中...";
+        checkBtn.disabled = true;
+
+        const systemPrompt = `あなたは子供を励ます英語の先生です。
+出題されたテーマ/質問：「${this.currentTask.jp}」
+目標単語：「${this.targetWord.w}」
+
+ユーザーの英文が上記のテーマや質問に対する回答として適切か、意味と文法が正しいかチェックしてください。（Lv1の場合は目標単語が含まれているかも確認）
+必ず以下のJSONフォーマットのみで返答してください（Markdownの\`\`\`jsonなどは絶対に含めないでください）：
+{
+  "pass": true, 
+  "perfect": false,
+  "correctedSentence": "完璧な英文",
+  "errorType": "Spelling|Grammar|Tense|None",
+  "feedback": "子供向けの優しい日本語のコメント（短く）",
+  "visualBlocks": [
+    {"word": "I", "status": "green"},
+    {"word": "play", "status": "yellow", "fixAction": "+ed", "correctedWord": "played"}
+  ]
+}
+※ passの基準: 意味が通じれば、小さな文法ミスがあっても true にしてください。`;
+
+        const prompt = `ユーザーの入力: "${userInput}"`;
+        const res = await Gemini.call(prompt, systemPrompt);
+        
+        try {
+            const cleanRes = res.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const jsonResult = JSON.parse(cleanRes);
+            this.handleResult(jsonResult, userInput);
+        } catch (e) {
+            console.error("JSON Parse Error:", e, res);
+            UI.alert("エラー", "AIの判定に失敗しました。もう一度試してね！");
+            checkBtn.innerText = "✨ AI 魔法チェック";
+            checkBtn.disabled = false;
+        }
+    },
+
+handleResult(jsonResult, userInput) {
+        if (!this.db) this.db = []; 
+        this.db.push({
+            date: new Date().toISOString(),
+            level: this.currentLevel || 1, // ★ 我們這裡一直有偷偷存等級喔！
+            targetVocab: this.targetWord ? this.targetWord.w : "",
+            promptJp: this.currentTask ? this.currentTask.jp : "",
+            userInput: userInput,
+            aiCorrection: jsonResult.correctedSentence,
+            errorType: jsonResult.errorType,
+            pass: jsonResult.pass
+        });
+
+        // ★ メモリ管理 (記憶體防爆：只保留最新 100 筆，FIFO 邏輯)
+        if (this.db.length > 100) {
+            this.db = this.db.slice(this.db.length - 100);
+        }
+
+        localStorage.setItem('spellquest_sentences_db', JSON.stringify(this.db));
+
+        const checkBtn = document.getElementById('sentence-check-btn');
+        if (checkBtn) checkBtn.classList.add('hidden');
+        
+        if (typeof this.renderBlocks === 'function') this.renderBlocks(jsonResult);
+        
+
+        let dropMsg = "";
+
+        if (jsonResult.pass) {
+            this.streak = (this.streak || 0) + 1;
+            this.failCount = 0;
+            if (typeof this.dropIngredients === 'function') {
+                dropMsg = this.dropIngredients(this.currentLevel || 1, jsonResult.perfect); 
+            }
+            if (this.streak >= 3 && (this.currentLevel || 1) < 5) {
+                this.currentLevel = (this.currentLevel || 1) + 1;
+                this.streak = 0;
+                if (typeof this.updateLevelBadge === 'function') this.updateLevelBadge();
+                localStorage.setItem('spellquest_sentence_lvl', this.currentLevel);
+                setTimeout(() => UI.alert("ランクアップ！🎉", "すごい！次の級に進むよ！"), 800);
+            }
+        } else {
+            this.streak = 0;
+            this.failCount = (this.failCount || 0) + 1;
+            if (this.failCount >= 2 && (this.currentLevel || 1) > 1) {
+                this.currentLevel--;
+                this.failCount = 0;
+                if (typeof this.updateLevelBadge === 'function') this.updateLevelBadge();
+                localStorage.setItem('spellquest_sentence_lvl', this.currentLevel);
+                setTimeout(() => UI.alert("ちょっと難しかったね！", "魔法で前の級に戻るよ！装備を整えよう！"), 800);
+            }
+        }
+        
+        const streakEl = document.getElementById('sentence-streak');
+        if (streakEl) streakEl.innerText = this.streak;
+
+        const feedbackBox = document.getElementById('sentence-ai-feedback');
+        if (feedbackBox) {
+            feedbackBox.innerHTML = `
+                <div style="font-weight:bold; margin-bottom:10px; color:var(--text); font-size:1.1rem;">
+                    ${jsonResult.perfect ? '🌟 完璧！素晴らしい！' : (jsonResult.pass ? '✨ いいね！魔法で少し直してみよう！' : '💪 惜しい！魔法のブロックをタップして直そう！')}
+                </div>
+                ${dropMsg ? `<div style="margin-bottom:10px; color:#e67e22; font-weight:bold; font-size:1.1rem; background:#fff3e0; padding:8px; border-radius:8px; border:1px dashed #f39c12;">${dropMsg}</div>` : ''}
+                <div style="margin-bottom:15px; line-height:1.5;">${jsonResult.feedback || ''}</div>
+                <button class="btn" style="width:100%;" onclick="SentenceGame.start()">➡️ 次の単語へ</button>
+            `;
+            feedbackBox.classList.add('show');
+        }
+    },
+
+    dropIngredients(level, isPerfect) {
+        const savedInv = localStorage.getItem('spellquest_inventory');
+        this.inventory = savedInv ? JSON.parse(savedInv) : { wheat: 0, egg: 0, milk: 0, butter: 0, apple: 0 };
+
+        const items = { wheat: '🌾 魔法の小麦粉', egg: '🥚 コッコの卵', milk: '🥛 牧場のミルク', butter: '🧈 黄金のバター', apple: '🍎 知恵のりんご' };
+        
+        if (!isPerfect) {
+            this.inventory['wheat'] = (this.inventory['wheat'] || 0) + 1;
+            localStorage.setItem('spellquest_inventory', JSON.stringify(this.inventory));
+            return `🎁 獲得: 🌾 魔法の小麦粉 x1<br><span style="font-size:0.9rem; color:#d35400;">(※ミスのない「完璧な英文」を作ると、レア食材が出るよ！)</span>`;
+        }
+
+        let drops = [];
+        let numDrops = 1;
+        if (level === 3) numDrops = Math.random() < 0.5 ? 1 : 2;
+        if (level === 4) numDrops = 2;
+        if (level === 5) numDrops = Math.random() < 0.5 ? 2 : 3;
+
+        for (let i = 0; i < numDrops; i++) {
+            let r = Math.random(), drop = '';
+            if (level === 1) { drop = r < 0.7 ? 'wheat' : 'egg'; }
+            else if (level === 2) { if (r < 0.4) drop = 'wheat'; else if (r < 0.8) drop = 'egg'; else if (r < 0.9) drop = 'milk'; else drop = 'butter'; }
+            else if (level === 3) { if (r < 0.4) drop = 'milk'; else if (r < 0.8) drop = 'butter'; else if (r < 0.85) drop = 'apple'; else drop = 'wheat'; }
+            else if (level === 4) { if (r < 0.15) drop = 'apple'; else if (r < 0.6) drop = 'milk'; else drop = 'butter'; }
+            else if (level === 5) { if (r < 0.3) drop = 'apple'; else if (r < 0.7) drop = 'butter'; else drop = 'milk'; }
+            drops.push(drop);
+            this.inventory[drop] = (this.inventory[drop] || 0) + 1;
+        }
+        localStorage.setItem('spellquest_inventory', JSON.stringify(this.inventory));
+
+        let counts = {};
+        drops.forEach(d => counts[d] = (counts[d] || 0) + 1);
+        let displayStr = Object.keys(counts).map(k => `${items[k]} x${counts[k]}`).join(', ');
+        return `🎁 獲得: ${displayStr}`;
+    },
+
+    renderBlocks(jsonResult) {
+        const inputEl = document.getElementById('sentence-input');
+        inputEl.classList.add('hidden'); 
+        const blocksArea = document.getElementById('sentence-blocks-area');
+        blocksArea.innerHTML = '';
+
+        jsonResult.visualBlocks.forEach((blockData) => {
+            const blockWrapper = document.createElement('div');
+            blockWrapper.style.position = 'relative';
+            blockWrapper.style.display = 'inline-block';
+
+            const block = document.createElement('div');
+            block.innerText = blockData.word;
+            
+            if (blockData.status === 'green' || jsonResult.perfect) {
+                block.className = 'sentence-block perfect';
+            } else if (blockData.status === 'yellow') {
+                block.className = 'sentence-block error';
+                if (blockData.fixAction) {
+                    const fixBtn = document.createElement('div');
+                    fixBtn.className = 'fix-block';
+                    fixBtn.innerText = blockData.fixAction;
+                    fixBtn.style.top = '-35px';
+                    fixBtn.style.left = '50%';
+                    fixBtn.style.transform = 'translateX(-50%)';
+                    fixBtn.onclick = () => {
+                        block.innerText = blockData.correctedWord || (blockData.word + blockData.fixAction.replace('+', ''));
+                        block.className = 'sentence-block perfect';
+                        fixBtn.remove(); 
+                    };
+                    blockWrapper.appendChild(fixBtn);
+                }
+            } else {
+                block.className = 'sentence-block'; 
+            }
+
+            blockWrapper.appendChild(block);
+            blocksArea.appendChild(blockWrapper);
+        });
+    },
+
+    speakTarget() {
+        if (!this.targetWord) return;
+        const u = new SpeechSynthesisUtterance(this.targetWord.w);
+        u.lang = 'en-US';
+        u.rate = 0.8;
+        window.speechSynthesis.speak(u);
+    }
 };
 
 App.init();
