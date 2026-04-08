@@ -856,9 +856,9 @@ const Gemini = {
         const res = await this.call(prompt, system);
         if (res) {
             const formatted = res.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-            document.getElementById('modal-content').innerHTML = `<div style="line-height:1.8; text-align:center;">${formatted}</div><button class="btn small" style="margin-top:20px; width:100%;" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>`;
+            document.getElementById('modal-content').innerHTML = `<div style="line-height:1.8; text-align:center;">${formatted}</div>`;
         } else {
-            document.getElementById('modal-content').innerHTML = `<p>通信に失敗しました。APIキー或者網路狀況を確認してね！</p><button class="btn small" style="margin-top:20px; width:100%;" onclick="document.getElementById('custom-modal').classList.remove('show')">閉じる</button>`;
+            document.getElementById('modal-content').innerHTML = `<p>通信に失敗しました。APIキー或者網路狀況を確認してね！</p>`;
         }
     },
 
@@ -1298,7 +1298,11 @@ renderWordbook() {
         const modal = document.getElementById('custom-modal'), cancel = document.getElementById('modal-cancel');
         document.getElementById('modal-msg').innerHTML = word.w;
         document.getElementById('modal-content').innerHTML = `<div style="font-weight:bold; margin-bottom:15px; color:#666;">意味: ${word.m}</div><button class="btn ai small" id="gen-sentence-btn" style="width:100%;">✨ AI例文をリクエスト</button><div id="detail-ai-box" class="ai-box">AI例文を作成中...</div>`;
-        document.getElementById('modal-ok').classList.add('hidden'); cancel.innerText = "閉じる"; modal.classList.add('show');
+        document.getElementById('modal-ok').classList.add('hidden'); 
+        cancel.classList.remove('hidden');
+        cancel.innerText = "閉じる"; 
+        cancel.style.width = "100%";
+        modal.classList.add('show');
         document.getElementById('gen-sentence-btn').onclick = async () => {
             const box = document.getElementById('detail-ai-box'); box.classList.add('show');
             const res = await Gemini.call(`Generate a simple English sentence for a child using "${word.w}". Format: English [break] Japanese`);
@@ -1309,8 +1313,10 @@ renderWordbook() {
     alert(title, text) {
         document.getElementById('modal-msg').innerText = title; document.getElementById('modal-content').innerText = text;
         const ok = document.getElementById('modal-ok'), cancel = document.getElementById('modal-cancel');
-        ok.onclick = () => document.getElementById('custom-modal').classList.remove('show');
-        ok.classList.remove('hidden'); cancel.classList.remove('hidden'); cancel.innerText = "閉じる";
+        ok.classList.add('hidden'); 
+        cancel.classList.remove('hidden'); 
+        cancel.innerText = "閉じる";
+        cancel.style.width = "100%";
         document.getElementById('custom-modal').classList.add('show');
     },
 
@@ -1318,7 +1324,10 @@ renderWordbook() {
         document.getElementById('modal-msg').innerText = title; document.getElementById('modal-content').innerText = text;
         const ok = document.getElementById('modal-ok'), cancel = document.getElementById('modal-cancel');
         ok.onclick = () => { onOk(); document.getElementById('custom-modal').classList.remove('show'); };
-        ok.classList.remove('hidden'); cancel.classList.remove('hidden'); cancel.innerText = "キャンセル";
+        ok.classList.remove('hidden'); 
+        cancel.classList.remove('hidden'); 
+        cancel.innerText = "キャンセル";
+        cancel.style.width = "auto";
         document.getElementById('custom-modal').classList.add('show');
     }
 };
