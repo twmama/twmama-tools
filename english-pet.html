@@ -412,7 +412,7 @@
             </div>
         </div>
         <div class="menu-grid">
-            <div class="menu-item" onclick="Router.go('sentence'); SentenceGame.init(); SentenceGame.start();">
+            <div class="menu-item" onclick="Router.go('sentence'); SentenceGame.init();">
                 <div class="icon">✍️</div>
                 <div class="label">AI 文章コーチ</div>
             </div>
@@ -479,13 +479,18 @@
         </div>
         
         <div style="width:100%; display:flex; justify-content:space-between; margin-bottom: 15px; align-items:center;">
-            <span class="tag lvl-2" id="sentence-lvl-badge" style="font-size:0.9rem; padding:4px 10px;">Lv.1 穴埋め</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="tag lvl-2" id="sentence-lvl-badge" style="font-size:0.9rem; padding:4px 10px;">Lv.1 穴埋め</span>
+                <button onclick="SentenceGame.nextQuestion()" class="btn small outline" style="padding:3px 8px; font-size:0.8rem; background:#f1f2f6; border:1px solid #ced6e0; color:#576574; cursor:pointer;">
+                    ⏭️ スキップ
+                </button>
+            </div>
             <span style="font-weight:bold; color:var(--primary); font-size:1.2rem;">⭐ <span id="sentence-streak">0</span></span>
         </div>
 
         <div class="flashcard" style="width:100%; box-sizing:border-box; padding:20px 15px;">
             <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:20px;">
-                <button id="sentence-tts-btn" class="btn icon-btn" style="width:40px; height:40px; border-radius:50%; font-size:1.2rem; flex-shrink:0;">🔊</button>
+                <button id="sentence-tts-btn" class="btn icon-btn" style="width:40px; height:40px; border-radius:50%; font-size:1.2rem; flex-shrink:0;" onclick="SentenceGame.speakSentence()">🔊</button>
                 <div id="sentence-prompt-jp" style="font-size:1.1rem; font-weight:bold; color:#555; line-height:1.4; padding-top:8px;">
                     (日文題目準備中...)
                 </div>
@@ -1394,9 +1399,26 @@ const Admin = {
 
     saveSentenceLevel() {
         const lvl = parseInt(document.getElementById('admin-sentence-lvl').value);
+        
+        // 1. Save the base setting
         localStorage.setItem('spellquest_sentence_lvl', lvl);
+        
+        // 2. OVERRIDE the progression memory so it doesn't revert the level
+        const savedProgression = localStorage.getItem('spellquest_sentence_progress');
+        if (savedProgression) {
+            const prog = JSON.parse(savedProgression);
+            prog.currentLevel = lvl; 
+            // Keep the streak/stars, just update the level
+            localStorage.setItem('spellquest_sentence_progress', JSON.stringify(prog));
+        }
+
+        // 3. Clear the cached question state so the new level applies immediately
+        localStorage.removeItem('spellquest_sentence_state');
+
+        // 4. Update runtime variable
         if (typeof SentenceGame !== 'undefined') SentenceGame.currentLevel = lvl;
-        UI.alert("成功", "文章コーチのレベルを保存しました！");
+
+        UI.alert("成功", "文章コーチのレベルを保存しました！（次回から新レベルが適用されます）");
     },
 
     saveLimits() {
@@ -1512,9 +1534,11 @@ const SentenceGame = {
     db: [],
     currentLevel: 1,
     streak: 0,
-    failCount: 0,
+    struggleCount: 0,
     targetWord: null,
     currentTask: null,
+    lastCorrectedSentence: null,
+    jsonResult: null,
     inventory: { wheat: 0, egg: 0, milk: 0, butter: 0, apple: 0 },
 
     init() {
@@ -1522,20 +1546,98 @@ const SentenceGame = {
         this.db = savedDb ? JSON.parse(savedDb) : [];
         const savedInv = localStorage.getItem('spellquest_inventory');
         if (savedInv) { this.inventory = { ...this.inventory, ...JSON.parse(savedInv) }; }
-        this.currentLevel = parseInt(localStorage.getItem('spellquest_sentence_lvl')) || 1;
-        this.streak = 0;
-        this.failCount = 0;
+        
+        const savedProgression = localStorage.getItem('spellquest_sentence_progress');
+        if (savedProgression) {
+            const prog = JSON.parse(savedProgression);
+            this.currentLevel = prog.currentLevel || 1;
+            this.streak = prog.streak || 0;
+            this.struggleCount = prog.struggleCount || 0;
+        } else {
+            this.currentLevel = parseInt(localStorage.getItem('spellquest_sentence_lvl')) || 1;
+            this.streak = 0;
+            this.struggleCount = 0;
+        }
+        
         document.getElementById('sentence-streak').innerText = this.streak;
         this.updateLevelBadge();
         document.getElementById('sentence-check-btn').onclick = () => this.checkAnswer();
-        document.getElementById('sentence-tts-btn').onclick = () => this.speakTarget();
+
+        const savedState = localStorage.getItem('spellquest_sentence_state');
+        if (savedState) {
+            const state = JSON.parse(savedState);
+            this.targetWord = state.targetWord;
+            this.currentTask = state.currentTask;
+            this.lastCorrectedSentence = state.lastCorrectedSentence;
+            this.jsonResult = state.jsonResult;
+            
+            if (this.currentTask) {
+                this.renderScaffold(this.currentTask);
+                const inputEl = document.getElementById('sentence-input');
+                inputEl.value = state.userInput || '';
+                
+                if (this.jsonResult) {
+                    this.renderBlocks(this.jsonResult);
+                    const checkBtn = document.getElementById('sentence-check-btn');
+                    checkBtn.classList.add('hidden');
+                    
+                    const feedbackBox = document.getElementById('sentence-ai-feedback');
+                    let dropMsg = "";
+                    if (this.jsonResult.pass && typeof this.dropIngredients === 'function') {
+                        // We don't want to re-drop, so maybe don't show dropMsg on restore, or save it.
+                        // For simplicity, we just won't show the drop message on restore.
+                    }
+                    feedbackBox.innerHTML = `
+                        <div style="font-weight:bold; margin-bottom:10px; color:var(--text); font-size:1.1rem;">
+                            ${this.jsonResult.perfect ? '🌟 完璧！素晴らしい！' : (this.jsonResult.pass ? '✨ いいね！魔法で少し直してみよう！' : '💪 惜しい！魔法のブロックをタップして直そう！')}
+                        </div>
+                        <div style="margin-bottom:15px; line-height:1.5;">${this.jsonResult.feedback || ''}</div>
+                        <button class="btn" style="width:100%;" onclick="SentenceGame.nextQuestion()">➡️ 次の単語へ</button>
+                    `;
+                    feedbackBox.classList.add('show');
+                }
+            } else {
+                this.generateNewTask();
+            }
+        } else {
+            this.generateNewTask();
+        }
     },
 
     updateLevelBadge() {
         document.getElementById('sentence-lvl-badge').innerText = this.RANK_NAMES[this.currentLevel - 1] || this.RANK_NAMES[4];
     },
 
-    async start() {
+    saveProgression() {
+        const prog = {
+            currentLevel: this.currentLevel,
+            streak: this.streak,
+            struggleCount: this.struggleCount
+        };
+        localStorage.setItem('spellquest_sentence_progress', JSON.stringify(prog));
+        localStorage.setItem('spellquest_sentence_lvl', this.currentLevel);
+    },
+
+    saveState(userInput) {
+        const state = {
+            targetWord: this.targetWord,
+            currentTask: this.currentTask,
+            lastCorrectedSentence: this.lastCorrectedSentence,
+            userInput: userInput || '',
+            jsonResult: this.jsonResult
+        };
+        localStorage.setItem('spellquest_sentence_state', JSON.stringify(state));
+    },
+
+    nextQuestion() {
+        localStorage.removeItem('spellquest_sentence_state');
+        this.generateNewTask();
+    },
+
+    async generateNewTask() {
+        this.lastCorrectedSentence = null;
+        this.jsonResult = null;
+        localStorage.removeItem('spellquest_sentence_state');
         // 1. Gather all 習得済み words (interval >= 21 and not paused/inactive)
         let targetPool = App.db.filter(w => w.interval >= 21 && !w.paused && w.active !== false);
         
@@ -1597,8 +1699,10 @@ const SentenceGame = {
         } catch (e) {
             console.error("Task Generation Error:", e, res);
             UI.alert("エラー", "問題の作成に失敗しました。もう一度試してね！");
-            document.getElementById('sentence-prompt-jp').innerHTML = `<button class="btn small outline" onclick="SentenceGame.start()">🔄 再試行</button>`;
+            document.getElementById('sentence-prompt-jp').innerHTML = `<button class="btn small outline" onclick="SentenceGame.generateNewTask()">🔄 再試行</button>`;
         }
+        
+        this.saveState('');
     },
 
     renderScaffold(json) {
@@ -1626,6 +1730,8 @@ const SentenceGame = {
         const inputEl = document.getElementById('sentence-input');
         const userInput = inputEl.value.trim();
         if (!userInput) return;
+
+        this.saveState(userInput);
 
         const checkBtn = document.getElementById('sentence-check-btn');
         checkBtn.innerText = "✨ 魔法チェック中...";
@@ -1666,6 +1772,10 @@ const SentenceGame = {
     },
 
 handleResult(jsonResult, userInput) {
+        this.lastCorrectedSentence = jsonResult.correctedSentence;
+        this.jsonResult = jsonResult;
+        this.saveState(userInput);
+
         if (!this.db) this.db = []; 
         this.db.push({
             date: new Date().toISOString(),
@@ -1694,28 +1804,35 @@ handleResult(jsonResult, userInput) {
         let dropMsg = "";
 
         if (jsonResult.pass) {
-            this.streak = (this.streak || 0) + 1;
-            this.failCount = 0;
             if (typeof this.dropIngredients === 'function') {
                 dropMsg = this.dropIngredients(this.currentLevel || 1, jsonResult.perfect); 
             }
-            if (this.streak >= 3 && (this.currentLevel || 1) < 5) {
-                this.currentLevel = (this.currentLevel || 1) + 1;
-                this.streak = 0;
-                if (typeof this.updateLevelBadge === 'function') this.updateLevelBadge();
-                localStorage.setItem('spellquest_sentence_lvl', this.currentLevel);
-                setTimeout(() => UI.alert("ランクアップ！🎉", "すごい！次の級に進むよ！"), 800);
-            }
+        }
+
+        if (jsonResult.perfect) {
+            this.streak = (this.streak || 0) + 1;
+            this.struggleCount = 0;
         } else {
             this.streak = 0;
-            this.failCount = (this.failCount || 0) + 1;
-            if (this.failCount >= 2 && (this.currentLevel || 1) > 1) {
-                this.currentLevel--;
-                this.failCount = 0;
-                if (typeof this.updateLevelBadge === 'function') this.updateLevelBadge();
-                localStorage.setItem('spellquest_sentence_lvl', this.currentLevel);
-                setTimeout(() => UI.alert("ちょっと難しかったね！", "魔法で前の級に戻るよ！装備を整えよう！"), 800);
-            }
+            this.struggleCount = (this.struggleCount || 0) + 1;
+        }
+
+        if (this.streak >= 5 && (this.currentLevel || 1) < 5) {
+            this.currentLevel = (this.currentLevel || 1) + 1;
+            this.streak = 0;
+            this.struggleCount = 0;
+            if (typeof this.updateLevelBadge === 'function') this.updateLevelBadge();
+            this.saveProgression();
+            setTimeout(() => UI.alert("ランクアップ！🎉", "すごい！5回連続パーフェクト！次の級に進むよ！"), 800);
+        } else if (this.struggleCount >= 3 && (this.currentLevel || 1) > 1) {
+            this.currentLevel--;
+            this.streak = 4;
+            this.struggleCount = 0;
+            if (typeof this.updateLevelBadge === 'function') this.updateLevelBadge();
+            this.saveProgression();
+            setTimeout(() => UI.alert("ちょっと難しかったね！", "魔法で前の級に戻るよ！装備を整えよう！"), 800);
+        } else {
+            this.saveProgression();
         }
         
         const streakEl = document.getElementById('sentence-streak');
@@ -1729,7 +1846,7 @@ handleResult(jsonResult, userInput) {
                 </div>
                 ${dropMsg ? `<div style="margin-bottom:10px; color:#e67e22; font-weight:bold; font-size:1.1rem; background:#fff3e0; padding:8px; border-radius:8px; border:1px dashed #f39c12;">${dropMsg}</div>` : ''}
                 <div style="margin-bottom:15px; line-height:1.5;">${jsonResult.feedback || ''}</div>
-                <button class="btn" style="width:100%;" onclick="SentenceGame.start()">➡️ 次の単語へ</button>
+                <button class="btn" style="width:100%;" onclick="SentenceGame.nextQuestion()">➡️ 次の単語へ</button>
             `;
             feedbackBox.classList.add('show');
         }
@@ -1812,9 +1929,18 @@ handleResult(jsonResult, userInput) {
         });
     },
 
-    speakTarget() {
-        if (!this.targetWord) return;
-        const u = new SpeechSynthesisUtterance(this.targetWord.w);
+    speakSentence() {
+        let textToSpeak = "";
+        if (this.lastCorrectedSentence) {
+             textToSpeak = this.lastCorrectedSentence;
+        } else if (this.currentTask && this.currentTask.scaffold) {
+             textToSpeak = this.currentTask.scaffold.replace(/_+/g, "blank").replace(/\[\s*\]/g, "blank");
+        }
+        if (!textToSpeak && this.targetWord) textToSpeak = this.targetWord.w;
+
+        if (!textToSpeak) return;
+
+        const u = new SpeechSynthesisUtterance(textToSpeak);
         u.lang = 'en-US';
         u.rate = 0.8;
         window.speechSynthesis.speak(u);
