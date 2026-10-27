@@ -210,6 +210,23 @@
         }
 
         /* === AI 造句小老師專用 CSS === */
+        
+        /* === 霧の森 專用 CSS === */
+        .fog-container {
+            padding: 20px; border-radius: 15px;
+            background: #f8f9fa; min-height: 150px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+            border: 2px dashed #bdc3c7; width: 100%; box-sizing: border-box;
+        }
+        .fog-word-span {
+            font-family: 'Fredoka', sans-serif; font-size: 1.5rem; cursor: pointer;
+            padding: 4px 8px; border-radius: 8px; transition: all 0.2s; color: var(--text); font-weight: bold;
+        }
+        .fog-word-span:active { background: #e0e0e0; }
+        .fog-word-span.perfect-highlight { background: var(--success) !important; color: white !important; box-shadow: 0 0 10px rgba(29, 209, 161, 0.6); }
+        .fog-shake { animation: shake 0.4s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+
         .sentence-block {
             display: inline-flex; align-items: center; justify-content: center;
             padding: 8px 12px; border-radius: 10px; font-family: 'Fredoka', sans-serif;
@@ -416,6 +433,10 @@
                 <div class="icon">✍️</div>
                 <div class="label">AI 文章コーチ</div>
             </div>
+            <div class="menu-item" onclick="FogGame.openSetup()">
+                <div class="icon">🌲</div>
+                <div class="label">霧の森</div>
+            </div>
             <div class="menu-item" onclick="Router.go('bakery')">
                 <div class="icon">🍰</div>
                 <div class="label">魔法のパン屋</div>
@@ -426,6 +447,7 @@
             
             <div class="menu-item" onclick="Router.go('result'); UI.renderStory();"><div class="icon">📖</div><div class="label">今日の物語</div></div>
             <div class="menu-item" onclick="Router.go('admin')"><div class="icon">⚙️</div><div class="label">管理＆設定</div></div>
+            <div class="menu-item" onclick="App.showExportMenu()"><div class="icon">💾</div><div class="label">データ出力</div></div>
             
             <div class="menu-item" onclick="Game.start()" style="background: var(--primary); border-color: #e67e22; grid-column: span 2;">
                 <div class="icon">🚀</div>
@@ -463,6 +485,53 @@
         </div>
         <div style="width:100%; margin-top:20px;">
             <button class="btn ai" style="width:100%; font-size:1.1rem;" onclick="Gemini.generateStory('manual')">🔄 新しい物語を作る (AI生成)</button>
+        </div>
+    </div>
+
+    <!-- === 霧の森 畫面 === -->
+    <div id="screen-fog-setup" class="screen">
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2>🌲 霧の森</h2>
+            <button onclick="Router.go('home')" class="btn small outline">戻る</button>
+        </div>
+        <div class="flashcard" style="width:100%; padding:20px; box-sizing:border-box; text-align:left;">
+            <div style="background:#e3f2fd; padding:12px; border-radius:12px; margin-bottom:15px; font-size:0.9rem; color:#1565c0; font-weight:bold;">💡 遊び方：音声をよく聞いて、正しい単語を見つけよう！1回で意味まで当てると『魔法のパン屋』のレアな食材がもらえるかも？🍩</div>
+            <div style="font-weight:bold; margin-bottom:15px; font-size:1.1rem; color:var(--primary);">🎯 ターゲット選択</div>
+            <label style="display:flex; align-items:center; margin-bottom:15px; cursor:pointer;">
+                <input type="radio" id="fog-opt-today" name="fog-target" value="today" checked style="transform:scale(1.4); margin-right:12px;">
+                <span id="fog-opt-today-label" style="font-size:1rem; font-weight:bold;">今日の単語</span>
+            </label>
+            <label style="display:flex; align-items:center; margin-bottom:15px; cursor:pointer;">
+                <input type="radio" id="fog-opt-weak" name="fog-target" value="weak" style="transform:scale(1.4); margin-right:12px;">
+                <span style="font-size:1rem; font-weight:bold;">復習（正解率 80% 未満）</span>
+            </label>
+            <label style="display:flex; align-items:center; margin-bottom:25px; cursor:pointer;">
+                <input type="radio" id="fog-opt-recent" name="fog-target" value="recent" style="transform:scale(1.4); margin-right:12px;">
+                <span style="font-size:1rem; font-weight:bold;">直近の揺動単語（Interval &lt; 21日）</span>
+            </label>
+            <div style="text-align:center;">
+                <button class="btn small" style="padding:15px 30px; font-size:1.1rem; width:auto;" onclick="FogGame.start()">ミッション開始</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-fog-game" class="screen">
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <button onclick="FogGame.quit()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">❌</button>
+            <span style="font-weight:bold; color:#888;" id="fog-progress">1 / 10</span>
+        </div>
+        
+        <div class="fog-container" id="fog-container">
+            <button id="fog-audio-btn" class="btn ai small" style="border-radius:25px; box-shadow:0 4px 0 #8854d0; padding:15px 25px; font-size:1.2rem; width:auto;" onclick="FogGame.playAudio()">🔊 音声を聴く</button>
+            <div id="fog-sentence" style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; width:100%; align-items:center;">
+                <!-- Sentences injected here -->
+            </div>
+        </div>
+
+        <div id="fog-meanings" style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:20px; opacity:0; pointer-events:none; transition:opacity 0.3s;">
+            <button class="btn outline" id="fog-btn-0" onclick="FogGame.checkMeaning(0)" style="background:#fff;"></button>
+            <button class="btn outline" id="fog-btn-1" onclick="FogGame.checkMeaning(1)" style="background:#fff;"></button>
+            <button class="btn outline" id="fog-btn-2" onclick="FogGame.checkMeaning(2)" style="background:#fff;"></button>
         </div>
     </div>
 
@@ -528,7 +597,6 @@
 <div style="width:100%; display:flex; gap:8px; margin-bottom:12px;">
     <button class="btn small" style="flex:1; background:#1dd1a1; box-shadow:0 3px 0 #10ac84; font-size:0.78rem;" onclick="Wordbook.toggleAddForm()">➕ 単語を追加</button>
     <button class="btn small" style="flex:1; background:#2196f3; box-shadow:0 3px 0 #1976d2; font-size:0.78rem;" onclick="document.getElementById('wb-csv-input').click()">📂 CSV 読込</button>
-    <button class="btn small" style="flex:1; background:#ff9f43; box-shadow:0 3px 0 #e67e22; font-size:0.78rem;" onclick="Admin.exportCSV()">📊 記録出力</button>
     <input type="file" id="wb-csv-input" accept=".csv" style="display:none" onchange="Admin.processCSV(this)">
 </div>
 
@@ -562,6 +630,12 @@
                 <option value="review">🔄 復習中</option>
                 <option value="mastered">✅ 習得済み</option>
             </select>
+        </div>
+
+        <!-- データ表示 (Wordbook Stats) -->
+        <div style="width:100%; background:#f8f9fa; border-radius:12px; padding:10px 15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; font-weight:bold; color:#576574; border:1px solid #e1e8ed; box-sizing:border-box;">
+            <div id="wb-total-count">総単語数: 0 個</div>
+            <div id="wb-filtered-count" style="color:var(--primary);">...</div>
         </div>
 
         <!-- 単語カードリスト -->
@@ -616,11 +690,10 @@
             </select>
             <button class="btn small" style="margin-top:8px; width:100%; background:#f39c12; box-shadow:0 3px 0 #d35400;" onclick="Admin.saveSentenceLevel()">レベルを保存</button>
         </div><div style="width:100%; background:#fff; border:2px solid #f1f2f6; padding:12px; border-radius:15px; margin-bottom:15px; box-sizing:border-box;">
-            <div style="font-weight:bold; margin-bottom:5px;">📊 學習數據 (NotebookLM 專用)</div>
-            <p style="font-size:0.8rem; color:#666; margin-top:0; margin-bottom:10px;">系統自動保留最新的 100 筆造句紀錄。請定期匯出並交給 AI 分析。</p>
-            <div style="display:flex; gap:10px;">
-                <button class="btn small" style="flex:1; background:#0984e3; box-shadow:0 3px 0 #0abde3;" onclick="Admin.exportSentences()">📥 紀錄匯出</button>
-                <button class="btn small" style="flex:1; background:#ff7675; box-shadow:0 3px 0 #d63031;" onclick="Admin.clearSentences()">🗑️ 清空紀錄</button>
+            <div style="font-weight:bold; margin-bottom:5px;">📊 学習記録管理</div>
+            <p style="font-size:0.8rem; color:#666; margin-top:0; margin-bottom:10px;">文章コーチの記録は最新100件まで保持されます。必要に応じてリセットしてください。</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn small" style="flex:1; min-width:120px; background:#ff7675; box-shadow:0 3px 0 #d63031;" onclick="Admin.clearSentences()">🗑️ 文章記録リセット</button>
             </div>
         </div>
 
@@ -674,6 +747,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div style="font-weight:bold; font-size:1.2rem; color:var(--primary); margin-bottom:15px;">出力するデータを選択</div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                <button class="btn small" style="background:#ff9f43; box-shadow:0 3px 0 #e67e22; font-size:1rem; padding: 10px;" onclick="ExportSystem.exportVocab()">📝 単語データ (Vocab)</button>
+                <button class="btn small" style="background:#0984e3; box-shadow:0 3px 0 #0abde3; font-size:1rem; padding: 10px;" onclick="ExportSystem.exportCoach()">🤖 文章コーチ (Coach)</button>
+                <button class="btn small" style="background:#2ecc71; box-shadow:0 3px 0 #27ae60; font-size:1rem; padding: 10px;" onclick="ExportSystem.exportFog()">🌲 霧の森 (Fog)</button>
+                <button class="btn small" style="background:#a55eea; box-shadow:0 3px 0 #8854d0; font-size:1rem; padding: 10px;" onclick="ExportSystem.exportAll()">📦 全て出力 (All)</button>
+            </div>
+            <button class="btn outline small" style="width: 100%; font-size:1rem; padding: 10px;" onclick="document.getElementById('export-modal').classList.remove('show')">閉じる</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -707,9 +794,14 @@ const COMMON_SPEECHES = ["{name}、大好きだよ！", "よくできました�
 const CORE_WORDS = [{w:"famous",m:"有名な",l:1},{w:"weekend",m:"週末",l:1},{w:"plan",m:"計画",l:1},{w:"enjoy",m:"楽しむ",l:1},{w:"library",m:"図書館",l:1},{w:"visit",m:"訪れる",l:1},{w:"because",m:"なぜなら",l:1},{w:"weather",m:"天気",l:1},{w:"friend",m:"友達",l:1},{w:"school",m:"学校",l:1},{w:"student",m:"生徒",l:1},{w:"family",m:"家族",l:1},{w:"house",m:"家",l:1},{w:"room",m:"部屋",l:1},{w:"study",m:"勉強する",l:1},{w:"play",m:"遊ぶ/弾く",l:1},{w:"watch",m:"見る",l:1},{w:"cook",m:"料理する",l:1},{w:"make",m:"作る",l:1},{w:"buy",m:"買う",l:1},{w:"want",m:"欲しい",l:1},{w:"like",m:"好き",l:1},{w:"have",m:"持っている",l:1},{w:"go",m:"行く",l:1},{w:"come",m:"来る",l:1},{w:"see",m:"會う/見る",l:1},{w:"eat",m:"食べる",l:1},{w:"give",m:"與える",l:1},{w:"take",m:"取る/連れて行く",l:1},{w:"help",m:"助ける",l:1},{w:"know",m:"知っている",l:1},{w:"think",m:"思う",l:1},{w:"say",m:"言う",l:1},{w:"look",m:"見る",l:1},{w:"use",m:"使う",l:1},{w:"find",m:"見つける",l:1},{w:"need",m:"必要とする",l:1},{w:"work",m:"働く",l:1},{w:"try",m:"試す",l:1},{w:"ask",m:"尋ねる",l:1},{w:"talk",m:"話す",l:1},{w:"start",m:"始める",l:1},{w:"finish",m:"終える",l:1},{w:"live",m:"住む",l:1},{w:"stay",m:"滯在する",l:1},{w:"move",m:"動く/引っ越す",l:1},{w:"walk",m:"歩く",l:1},{w:"run",m:"走る",l:1},{w:"read",m:"読む",l:1},{w:"write",m:"書く",l:1},{w:"speak",m:"話す",l:1},{w:"listen",m:"聞く",l:1},{w:"open",m:"開ける",l:1},{w:"close",m:"閉める",l:1},{w:"happy",m:"幸せな",l:1},{w:"sad",m:"悲しい",l:1},{w:"angry",m:"怒った",l:1},{w:"tired",m:"疲れた",l:1},{w:"hungry",m:"空腹の",l:1},{w:"thirsty",m:"喉が渇いた",l:1},{w:"good",m:"良い",l:1},{w:"bad",m:"悪い",l:1},{w:"big",m:"大きい",l:1},{w:"small",m:"小さい",l:1},{w:"long",m:"長い",l:1},{w:"short",m:"短い",l:1},{w:"new",m:"新しい",l:1},{w:"old",m:"古い",l:1},{w:"hot",m:"暑い",l:1},{w:"cold",m:"寒い",l:1},{w:"warm",m:"暖かい",l:1},{w:"cool",m:"涼しい",l:1},{w:"fast",m:"速い",l:1},{w:"slow",m:"遅い",l:1},{w:"easy",m:"簡単な",l:1},{w:"difficult",m:"難しい",l:1},{w:"interesting",m:"面白い",l:1},{w:"boring",m:"退屈な",l:1},{w:"fun",m:"楽しい",l:1},{w:"busy",m:"忙しい",l:1},{w:"free",m:"暇な/自由な",l:1},{w:"favorite",m:"一番好きな",l:1},{w:"popular",m:"人気のある",l:1},{w:"important",m:"重要な",l:1},{w:"beautiful",m:"美しい",l:1},{w:"kind",m:"親切な",l:1},{w:"time",m:"時間",l:1},{w:"day",m:"日",l:1},{w:"week",m:"週",l:1},{w:"month",m:"月",l:1},{w:"year",m:"年",l:1},{w:"morning",m:"朝",l:1},{w:"afternoon",m:"午後",l:1},{w:"evening",m:"夕方",l:1},{w:"night",m:"夜",l:1},{w:"today",m:"今日",l:1},{w:"tomorrow",m:"明日",l:1},{w:"yesterday",m:"昨日",l:1},{w:"summer",m:"夏",l:1},{w:"winter",m:"冬",l:1},{w:"spring",m:"春",l:1},{w:"fall",m:"秋",l:1},{w:"vacation",m:"休暇",l:1},{w:"holiday",m:"休日",l:1},{w:"breakfast",m:"朝食",l:1},{w:"lunch",m:"晝食",l:1},{w:"dinner",m:"夕食",l:1},{w:"food",m:"食べ物",l:1},{w:"water",m:"水",l:1},{w:"book",m:"本",l:1},{w:"pen",m:"ペン",l:1},{w:"computer",m:"コンピュータ",l:1},{w:"phone",m:"電話",l:1},{w:"money",m:"お金",l:1},{w:"bag",m:"鞄",l:1},{w:"clothes",m:"服",l:1},{w:"car",m:"車",l:1},{w:"bus",m:"バス",l:1},{w:"train",m:"電車",l:1},{w:"bike",m:"自転車",l:1},{w:"city",m:"都市",l:1},{w:"park",m:"公園",l:1},{w:"hospital",m:"病院",l:1},{w:"station",m:"駅",l:1},{w:"restaurant",m:"レストラン",l:1},{w:"museum",m:"博物館",l:1},{w:"idea",m:"考え",l:1},{w:"problem",m:"問題",l:1},{w:"question",m:"質問",l:1},{w:"answer",m:"答え",l:1},{w:"story",m:"物語",l:1},{w:"letter",m:"手紙",l:1},{w:"picture",m:"寫真",l:1},{w:"music",m:"音樂",l:1},{w:"movie",m:"映画",l:1},{w:"sport",m:"スポーツ",l:1},{w:"game",m:"ゲーム",l:1},{w:"art",m:"芸術",l:1},{w:"history",m:"歴史",l:1},{w:"science",m:"科學",l:1},{w:"math",m:"數學",l:1},{w:"English",m:"英語",l:1},{w:"Japanese",m:"日本語",l:1},{w:"animal",m:"動物",l:1},{w:"dog",m:"犬",l:1},{w:"cat",m:"貓",l:1},{w:"bird",m:"鳥",l:1},{w:"fish",m:"魚",l:1},{w:"flower",m:"花",l:1},{w:"tree",m:"木",l:1},{w:"river",m:"川",l:1},{w:"sea",m:"海",l:1},{w:"mountain",m:"山",l:1},{w:"sky",m:"空",l:1},{w:"sun",m:"太陽",l:1},{w:"moon",m:"月",l:1},{w:"star",m:"星",l:1},{w:"rain",m:"雨",l:1},{w:"snow",m:"雪",l:1},{w:"wind",m:"風",l:1},{w:"cloud",m:"雲",l:1}];
 
 const App = {
-    db: [], apiKey: "", userNickname: "大寶",
+    db: [], fogHistory: [], apiKey: "", userNickname: "大寶",
     dailyNewLimit: 5, dailyReviewLimit: 15,
     init() {
+        const savedFog = localStorage.getItem('spellquest_fog_history');
+        if (savedFog) {
+            try { App.fogHistory = JSON.parse(savedFog); } catch(e) { App.fogHistory = []; }
+        }
+
         const saved = localStorage.getItem(APP_STORAGE_KEY);
         if (saved) {
             try {
@@ -748,6 +840,9 @@ const App = {
             localStorage.setItem('streak', streak); localStorage.setItem('last_login_date', todayStr);
         }
         UI.updateHome();
+    },
+    showExportMenu() {
+        document.getElementById('export-modal').classList.add('show');
     },
     createObj(raw) { return { w: raw.w, m: raw.m, l: raw.l, status: 'new', interval: 0, nextReview: 0, mastered: false, correctCount: 0, totalAttempts: 0, lastReviewTime: 0, paused: false }; },
     save() { localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(App.db)); },
@@ -901,7 +996,8 @@ const Gemini = {
 const Game = {
     queue: [], current: null, total: 0,
     start() {
-        const now = Date.now(), d = new Date().toISOString().split('T')[0];
+        const now = Date.now(), todayObj = new Date();
+        const d = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
         const dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${d}`) || 0);
         let reviews = App.db.filter(w => !w.paused && w.mastered && w.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview).slice(0, App.dailyReviewLimit);
         let news = []; const remaining = App.dailyNewLimit - dailyNewCount;
@@ -910,7 +1006,7 @@ const Game = {
         if(!this.queue.length) { UI.alert("完了！", "今日のタスクはありません。また明日！"); return; }
         this.total = this.queue.length;
         this.queue.forEach(w => { 
-            w.sessionStep = (w.totalAttempts > 0 || w.mastered) ? 3 : 1; 
+            w.sessionStep = w.mastered ? 3 : 1; 
             w.sessionWrong = false; 
         });
         Router.go('game'); this.next();
@@ -954,7 +1050,7 @@ const Game = {
             if(this.current.sessionStep === 2) this.current.sessionStep = 3; 
             else { 
                 const wasNew = !this.current.mastered; this.updateSM2(); this.current.sessionStep = 4; 
-                if (wasNew) { const d = new Date().toISOString().split('T')[0]; const key = `daily_new_count_${d}`; localStorage.setItem(key, (parseInt(localStorage.getItem(key)) || 0) + 1); }
+                if (wasNew) { const todayObj = new Date(); const d = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0'); const key = `daily_new_count_${d}`; localStorage.setItem(key, (parseInt(localStorage.getItem(key)) || 0) + 1); }
             }
             this.next();
         } else { this.current.sessionWrong = true; UI.alert("おっと！", `正解は [ ${this.current.w} ] です。`); this.current.sessionStep = 1; this.next(); }
@@ -996,6 +1092,259 @@ const Router = {
         if (page === 'admin') Admin.render(); 
         if (page === 'bakery') UI.renderBakery(); 
     }
+};
+
+const FogGame = {
+    queue: [],
+    currentIndex: 0,
+    currentWord: null,
+    currentSentence: "",
+    correctOptionIdx: -1,
+    failedMeaning: false,
+    currentMode: null,
+    currentLog: {},
+    
+    openSetup() { 
+        const todayStr = new Date().toDateString();
+        const clearedDate = localStorage.getItem('spellquest_fog_today_cleared');
+        const optToday = document.getElementById('fog-opt-today');
+        const optTodayLabel = document.getElementById('fog-opt-today-label');
+        const optWeak = document.getElementById('fog-opt-weak');
+
+        if (clearedDate === todayStr) {
+            optToday.disabled = true;
+            optTodayLabel.innerHTML = "今日の単語 <span style='color:#e74c3c; font-size:0.85rem;'>(本日クリア済 🏆)</span>";
+            optTodayLabel.style.color = "#bdc3c7";
+            optWeak.checked = true;
+        } else {
+            optToday.disabled = false;
+            optTodayLabel.innerHTML = "今日の単語";
+            optTodayLabel.style.color = "inherit";
+            optToday.checked = true;
+        }
+        Router.go('fog-setup'); 
+    },
+    
+    start() {
+        const target = document.querySelector('input[name="fog-target"]:checked').value;
+        this.currentMode = target;
+        let pool = [];
+        if (target === 'today') {
+            const now = Date.now();
+            pool = App.db.filter(w => !w.paused && ((w.interval === 0) || (w.nextReview <= now && w.interval > 0)));
+        } else if (target === 'weak') {
+            pool = App.db.filter(w => !w.paused && w.totalAttempts > 0 && (w.correctCount / w.totalAttempts) < 0.8);
+        } else if (target === 'recent') {
+            pool = App.db.filter(w => !w.paused && w.interval > 0 && w.interval < 21);
+        }
+        
+        if (pool.length === 0) { UI.alert("お知らせ", "条件に一致する単語がありません。"); return; }
+        this.queue = pool.sort(() => 0.5 - Math.random()).slice(0, 10);
+        this.currentIndex = 0;
+        Router.go('fog-game');
+        this.loadNext();
+    },
+    
+    async loadNext() {
+        this.failedMeaning = false;
+        if (this.currentIndex >= this.queue.length) {
+            if (this.currentMode === 'today') {
+                localStorage.setItem('spellquest_fog_today_cleared', new Date().toDateString());
+            }
+            UI.alert("クリア！", "ミッションコンプリート！よく頑張りました！");
+            Router.go('home');
+            return;
+        }
+        
+        this.currentWord = this.queue[this.currentIndex];
+        document.getElementById('fog-progress').innerText = `${this.currentIndex + 1} / ${this.queue.length}`;
+        
+        this.currentLog = {
+            date: new Date().toISOString().split('T')[0],
+            word: this.currentWord.w,
+            level: this.currentWord.l,
+            audioToText: true,
+            meaningAccuracy: true,
+            errorTrapLog: []
+        };
+        
+        const audioBtn = document.getElementById('fog-audio-btn');
+        audioBtn.style.display = 'block';
+        audioBtn.innerText = "⏳ 準備中...";
+        audioBtn.disabled = true;
+        
+        document.getElementById('fog-sentence').innerHTML = '';
+        const meaningsArea = document.getElementById('fog-meanings');
+        meaningsArea.style.opacity = '0';
+        meaningsArea.style.pointerEvents = 'none';
+        
+        if (this.currentWord.ex) {
+            this.currentSentence = this.currentWord.ex;
+        } else {
+            const systemPrompt = "You are an English teacher. Create an English sentence for a 10-year-old child using the EXACT word provided. IMPORTANT: Incorporate Eiken Grade 3 grammar (e.g., Present Perfect, Comparatives, Infinitives to do, Gerunds like enjoy ~ing). Do not make it too simple. Only output the English sentence.";
+            const prompt = `Word: "${this.currentWord.w}"`;
+            let sentence = await Gemini.call(prompt, systemPrompt);
+            if (!sentence) sentence = `I know the word ${this.currentWord.w}.`;
+            this.currentSentence = sentence.replace(/"/g, '').trim();
+            this.currentWord.ex = this.currentSentence;
+            App.save();
+        }
+
+        const sentenceContainer = document.getElementById('fog-sentence');
+        const targetStr = this.currentWord.w;
+        const exactRegex = new RegExp("(" + targetStr + ")", "i");
+        
+        let tokens = [];
+        if (targetStr.includes(' ') && exactRegex.test(this.currentSentence)) {
+            const parts = this.currentSentence.split(exactRegex);
+            parts.forEach(part => {
+                if (part.toLowerCase() === targetStr.toLowerCase()) {
+                    tokens.push({ text: part, isExact: true });
+                } else if (part.length > 0) {
+                    const subWords = part.split(/(\s+|[.,!?]+)/).filter(w => w.trim().length > 0 || w.match(/[.,!?]/));
+                    subWords.forEach(sw => tokens.push({ text: sw, isExact: false }));
+                }
+            });
+        } else {
+            const words = this.currentSentence.split(/(\s+|[.,!?]+)/).filter(w => w.trim().length > 0 || w.match(/[.,!?]/));
+            words.forEach(w => tokens.push({ text: w, isExact: false }));
+        }
+
+        const ignoreList = ['to', 'of', 'at', 'in', 'on', 'the', 'a', 'an'];
+        let coreWords = targetStr.toLowerCase().split(' ').filter(w => !ignoreList.includes(w) && w.length > 2);
+        if (coreWords.length === 0) {
+            coreWords = [targetStr.toLowerCase().replace(/[^a-z]/g, '')];
+        }
+
+        tokens.forEach(token => {
+            if (token.text.match(/^[.,!?]+$/) && !token.isExact) {
+                const span = document.createElement('span');
+                span.innerText = token.text;
+                span.style.fontFamily = "'Fredoka', sans-serif";
+                span.style.fontSize = "1.5rem";
+                span.style.color = "var(--text)";
+                sentenceContainer.appendChild(span);
+            } else {
+                const span = document.createElement('span');
+                span.className = 'fog-word-span';
+                span.innerText = token.text;
+                
+                let isTarget = false;
+                if (token.isExact) {
+                    isTarget = true;
+                } else {
+                    const wordClean = token.text.toLowerCase().replace(/[^a-z]/g, '');
+                    isTarget = coreWords.some(cw => 
+                        wordClean === cw || 
+                        wordClean === cw + 's' || 
+                        wordClean === cw + 'ed' || 
+                        wordClean === cw + 'ing' || 
+                        wordClean === cw + 'd'
+                    );
+                }
+                
+                span.onclick = () => this.checkWord(span, isTarget);
+                sentenceContainer.appendChild(span);
+            }
+        });
+        
+        audioBtn.innerText = "🔊 音声を聴く";
+        audioBtn.disabled = false;
+    },
+    
+    playAudio() {
+        const u = new SpeechSynthesisUtterance(this.currentWord.w);
+        u.lang = 'en-US'; u.rate = 0.8;
+        window.speechSynthesis.speak(u);
+    },
+    
+    checkWord(spanElement, isTarget) {
+        if (spanElement.classList.contains('perfect-highlight')) return;
+        if (isTarget) {
+            spanElement.classList.add('perfect-highlight');
+            this.revealMeanings();
+        } else {
+            spanElement.classList.add('fog-shake');
+            this.currentLog.audioToText = false;
+            this.currentLog.errorTrapLog.push('誤点単語: ' + spanElement.innerText);
+            setTimeout(() => spanElement.classList.remove('fog-shake'), 400);
+        }
+    },
+    
+    revealMeanings() {
+        const meaningsArea = document.getElementById('fog-meanings');
+        meaningsArea.style.opacity = '1';
+        meaningsArea.style.pointerEvents = 'auto';
+        
+        let wrongPool = App.db.filter(w => w.w !== this.currentWord.w);
+        wrongPool = wrongPool.sort(() => 0.5 - Math.random()).slice(0, 2);
+        const options = [
+            this.currentWord.m,
+            wrongPool[0] ? wrongPool[0].m : "テキトーな意味1",
+            wrongPool[1] ? wrongPool[1].m : "テキトーな意味2"
+        ];
+        
+        this.correctOptionIdx = Math.floor(Math.random() * 3);
+        const temp = options[this.correctOptionIdx];
+        options[this.correctOptionIdx] = options[0];
+        options[0] = temp;
+        
+        for (let i = 0; i < 3; i++) {
+            const btn = document.getElementById(`fog-btn-${i}`);
+            btn.innerText = options[i];
+            btn.className = "btn outline";
+            btn.style.background = "#fff";
+        }
+    },
+    
+    checkMeaning(idx) {
+        const btn = document.getElementById(`fog-btn-${idx}`);
+        if (idx === this.correctOptionIdx) {
+            btn.className = "btn green";
+            this.handleSuccess();
+        } else {
+            btn.className = "btn danger";
+            this.failedMeaning = true;
+            this.currentLog.meaningAccuracy = false;
+            this.currentLog.errorTrapLog.push('誤選意味: ' + btn.innerText);
+            setTimeout(() => { btn.className = "btn outline"; btn.style.background = "#fff"; }, 500);
+        }
+    },
+    
+    handleSuccess() {
+        const u = new SpeechSynthesisUtterance(this.currentSentence);
+        u.lang = 'en-US'; u.rate = 0.8;
+        window.speechSynthesis.speak(u);
+        
+        if (!App.fogHistory) App.fogHistory = [];
+        App.fogHistory.push(this.currentLog);
+        localStorage.setItem('spellquest_fog_history', JSON.stringify(App.fogHistory));
+        
+        if (this.failedMeaning) {
+            UI.alert("正解！", "でも、一回間違えちゃったからアイテムはお預け！次は一発で当てよう！");
+            this.currentIndex++;
+            this.loadNext();
+        } else {
+            const items = { wheat: '🌾小麦粉', egg: '🥚タマゴ', milk: '🥛牛乳', butter: '🧈バター', apple: '🍎リンゴ' };
+            let dropKeys = [];
+            const lvl = this.currentWord.l;
+            if (lvl === 1) dropKeys = ['wheat', 'egg'];
+            else if (lvl === 2) dropKeys = ['egg', 'milk', 'butter'];
+            else dropKeys = ['butter', 'apple'];
+            
+            const droppedKey = dropKeys[Math.floor(Math.random() * dropKeys.length)];
+            const savedInvStr = localStorage.getItem('spellquest_inventory');
+            let inventory = savedInvStr ? JSON.parse(savedInvStr) : { wheat: 0, egg: 0, milk: 0, butter: 0, apple: 0 };
+            inventory[droppedKey] = (inventory[droppedKey] || 0) + 1;
+            localStorage.setItem('spellquest_inventory', JSON.stringify(inventory));
+            
+            UI.alert("正解！🎉", `${items[droppedKey]} を獲得しました！`);
+            this.currentIndex++;
+            this.loadNext();
+        }
+    },
+    
+    quit() { Router.go('home'); }
 };
 
 const BakerySystem = {
@@ -1189,7 +1538,8 @@ const UI = {
     },
 
     updateMissionDisplay() {
-        const now = Date.now(), dateStr = new Date().toISOString().split('T')[0];
+        const now = Date.now(), todayObj = new Date();
+        const dateStr = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0');
         const dailyNewCount = parseInt(localStorage.getItem(`daily_new_count_${dateStr}`) || 0);
         const reviews = App.db.filter(w => !w.paused && w.mastered && w.nextReview <= now).slice(0, App.dailyReviewLimit).length;
         const news = App.db.filter(w => !w.paused && !w.mastered).slice(0, Math.max(0, App.dailyNewLimit - dailyNewCount)).length;
@@ -1198,10 +1548,12 @@ const UI = {
     },
 
     renderGallery() {
-        const container = document.getElementById('gallery-container'), mastered = App.db.filter(w => w.mastered).length;
+        const container = document.getElementById('gallery-container');
+        const status = App.getPetStatus();
+        const totalEnergy = status.masteredCount;
         container.innerHTML = '';
         PET_DATA.forEach((p, idx) => {
-            const unlocked = mastered >= p.t, div = document.createElement('div');
+            const unlocked = totalEnergy >= p.t, div = document.createElement('div');
             div.className = `gallery-item ${unlocked ? 'unlocked' : 'locked'}`;
             div.onclick = () => { if (unlocked) UI.alert(p.n + " " + p.e, p.desc); else UI.alert("???", "ロックされています。進化させてね！"); };
             div.innerHTML = `<div class="emoji">${unlocked ? p.e : '?'}</div><div class="name">${unlocked ? `Lv.${idx+1}<br>${p.n}` : `Lv.${idx+1}<br>???`}</div>`;
@@ -1222,6 +1574,25 @@ renderWordbook() {
     if (statSelect) statSelect.value = Wordbook.currentStatus;
 
     const words = Wordbook.getFilteredWords();
+
+    const totalCountEl = document.getElementById('wb-total-count');
+    const filteredCountEl = document.getElementById('wb-filtered-count');
+    if (totalCountEl && filteredCountEl) {
+        totalCountEl.innerText = `総単語数: ${App.db.length} 個`;
+        
+        let filterName = [];
+        if (catSelect && catSelect.options[catSelect.selectedIndex]) {
+            const catName = catSelect.options[catSelect.selectedIndex].text;
+            if (catName !== "すべてのカテゴリ") filterName.push(catName);
+        }
+        if (statSelect && statSelect.options[statSelect.selectedIndex]) {
+            const statName = statSelect.options[statSelect.selectedIndex].text;
+            if (statName !== "すべての状態") filterName.push(statName.replace(/^[^\s]+\s/, ''));
+        }
+        
+        const filterStr = filterName.length > 0 ? filterName.join(" + ") : "すべて";
+        filteredCountEl.innerText = `[${filterStr}]: ${words.length} 個`;
+    }
 
     if (words.length === 0) {
         container.innerHTML = `<div style="text-align:center; padding:40px; color:#b2bec3; font-size:0.95rem;">該当する単語がありません</div>`;
@@ -1350,42 +1721,6 @@ const Admin = {
         App.userNickname = document.getElementById('nickname-input').value.trim();
         localStorage.setItem('spellquest_nickname', App.userNickname);
         UI.alert("成功", "保存しました！");
-    },// ★ 寫作紀錄匯出 (NotebookLM用)
-    exportSentences() {
-        const savedDb = localStorage.getItem('spellquest_sentences_db');
-        if (!savedDb) {
-            UI.alert('お知らせ', 'まだ記録がありません。');
-            return;
-        }
-        const db = JSON.parse(savedDb);
-        if (db.length === 0) {
-            UI.alert('お知らせ', 'まだ記録がありません。');
-            return;
-        }
-
-        // 把數字等級轉換成您熟悉的名稱
-        const rankNames = ['C級', 'B級', 'A級', 'S級', 'SS級'];
-        let csv = "Date,Level,Target Word,Prompt,User Input,AI Correction,Error Type,Pass\n";
-        
-        db.forEach(row => {
-            const d = new Date(row.date).toLocaleString('ja-JP');
-            const lvlStr = rankNames[row.level - 1] || `Lv ${row.level}`;
-            const word = row.targetVocab || "";
-            // 防止句子裡的逗號破壞 CSV 格式
-            const q = (str) => '"' + String(str).replace(/"/g, '""') + '"';
-            
-            csv += `${q(d)},${q(lvlStr)},${q(word)},${q(row.promptJp)},${q(row.userInput)},${q(row.aiCorrection)},${q(row.errorType)},${row.pass}\n`;
-        });
-
-        // 加上 BOM，確保 Excel 或 NotebookLM 打開時不會變成亂碼
-        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", "notebooklm_writing_records.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     },
 
     // ★ 清空寫作紀錄 (釋放記憶體)
@@ -1488,22 +1823,6 @@ const Admin = {
         }
     },
 
-    exportCSV() {
-        const todayStr = new Date().toISOString().split('T')[0], streak = localStorage.getItem('streak') || 0;
-        const headers = ["Date", "Streak", "Word", "Meaning", "Level", "Correct", "Attempts", "Accuracy", "Interval", "LastReview"];
-        let csvRows = [headers.join(",")];
-        App.db.forEach(w => {
-            const acc = w.totalAttempts > 0 ? ((w.correctCount / w.totalAttempts) * 100).toFixed(1) : 0;
-            const lastRevDate = w.lastReviewTime ? new Date(w.lastReviewTime).toISOString().split('T')[0] : "Never";
-            csvRows.push([todayStr, streak, w.w, `"${w.m}"`, w.l, w.correctCount, w.totalAttempts, acc, w.interval, lastRevDate].join(","));
-        });
-        const blob = new Blob(["\ufeff" + csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.setAttribute("href", URL.createObjectURL(blob));
-        link.setAttribute("download", `study_report_${todayStr.replace(/-/g, '')}.csv`);
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    },
-
     processCSV(input) {
         const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
@@ -1526,6 +1845,74 @@ const Admin = {
 
     resetAll() {
         UI.confirm("⚠️ 警告", "全データを消去しますか？", () => { localStorage.clear(); location.reload(); });
+    }
+};
+
+const ExportSystem = {
+    getDatePrefix() {
+        return new Date().toISOString().split('T')[0];
+    },
+    exportVocab() {
+        const prefix = this.getDatePrefix();
+        const streak = localStorage.getItem('streak') || 0;
+        const headers = ["Date", "Streak", "Word", "Meaning", "Level", "Correct", "Attempts", "Accuracy", "Interval", "LastReview"];
+        let csvRows = [headers.join(",")];
+        App.db.forEach(w => {
+            const acc = w.totalAttempts > 0 ? ((w.correctCount / w.totalAttempts) * 100).toFixed(1) : 0;
+            const lastRevDate = w.lastReviewTime ? new Date(w.lastReviewTime).toISOString().split('T')[0] : "Never";
+            csvRows.push([prefix, streak, w.w, `"${w.m}"`, w.l, w.correctCount, w.totalAttempts, acc, w.interval, lastRevDate].join(","));
+        });
+        this.downloadCSV(csvRows.join("\n"), `${prefix}_Vocab.csv`);
+    },
+    exportCoach() {
+        const prefix = this.getDatePrefix();
+        const savedDb = localStorage.getItem('spellquest_sentences_db');
+        if (!savedDb) { UI.alert('お知らせ', 'まだ記録がありません。'); return; }
+        const db = JSON.parse(savedDb);
+        if (db.length === 0) { UI.alert('お知らせ', 'まだ記録がありません。'); return; }
+
+        const rankNames = ['C級', 'B級', 'A級', 'S級', 'SS級'];
+        let csv = "Date,Level,Target Word,Prompt,User Input,AI Correction,Error Type,Pass\n";
+        
+        db.forEach(row => {
+            const d = new Date(row.date).toLocaleString('ja-JP');
+            const lvlStr = rankNames[row.level - 1] || `Lv ${row.level}`;
+            const word = row.targetVocab || "";
+            const q = (str) => '"' + String(str).replace(/"/g, '""') + '"';
+            csv += `${q(d)},${q(lvlStr)},${q(word)},${q(row.promptJp)},${q(row.userInput)},${q(row.aiCorrection)},${q(row.errorType)},${row.pass}\n`;
+        });
+        this.downloadCSV(csv, `${prefix}_Coach.csv`);
+    },
+    exportFog() {
+        const prefix = this.getDatePrefix();
+        const savedFog = localStorage.getItem('spellquest_fog_history');
+        const history = savedFog ? JSON.parse(savedFog) : (App.fogHistory || []);
+        if (history.length === 0) {
+            UI.alert('お知らせ', 'まだ記録がありません。');
+            return;
+        }
+        let csv = "Date,Word,Level,Audio_to_Text,Meaning_Accuracy,Error_Trap_Log\n";
+        history.forEach(row => {
+            const errLog = row.errorTrapLog ? row.errorTrapLog.join(' / ') : '';
+            const q = (str) => '"' + String(str).replace(/"/g, '""') + '"';
+            csv += `${q(row.date)},${q(row.word)},${row.level},${row.audioToText},${row.meaningAccuracy},${q(errLog)}\n`;
+        });
+        this.downloadCSV(csv, `${prefix}_Fog.csv`);
+    },
+    exportAll() {
+        this.exportVocab();
+        setTimeout(() => this.exportCoach(), 500);
+        setTimeout(() => this.exportFog(), 1000);
+    },
+    downloadCSV(csvData, filename) {
+        const blob = new Blob(["\ufeff" + csvData], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 };
 
